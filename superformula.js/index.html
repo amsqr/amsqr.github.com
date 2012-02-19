@@ -1,0 +1,119 @@
+<html>
+<head>
+<script>
+
+/*
+
+ Superformula in HTML5 Canvas
+ 
+ Copyright (C) 2012 Alejandro Mosquera <amsqr2@gmail.com>
+ 
+ Equations from:
+ 
+ http://en.wikipedia.org/wiki/Superformula
+
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, version 3 of the License.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+function putpixelb(x,y,r,g,b) {
+	  
+	d_image[0]   = r;
+	d_image[1]   = g;
+	d_image[2]   = b;
+	d_image[3]   = 255;
+	$ctx.putImageData( $image_id, x, y );   
+}
+ 
+function putpixel(x,y,r,g,b)
+{
+  $ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ')';
+  $ctx.fillRect(x, y, 1, 1);
+}
+
+function test(){
+ 
+  // Precompute random pixels so this time isn't included in the tests
+  for (var i = 0; i < 1000; ++i) {
+
+	var x = Math.floor(Math.random() * 800);
+	var y = Math.floor(Math.random() * 300);
+	putpixel(x,y,Math.floor(Math.random() * 256),Math.floor(Math.random() * 256),Math.floor(Math.random() * 256));
+  }
+}
+
+
+function superShape(a, b, m, n1, n2, n3, pntx,pnty, scale){
+    var r = 0;
+    var p  = 0;
+    var xp = 0;
+    var yp = 0;
+
+    while(p <= TWO_PI){
+        var ang = m * p / 4;
+        r = Math.pow(Math.pow(Math.abs(Math.cos(ang) / a), n2) + Math.pow(Math.abs(Math.sin(ang) / b), n3),-1/n1);
+            xp = r * Math.cos(p);
+            yp = r * Math.sin(p);
+      
+        p += 0.01;
+
+	putpixelb(pntx + xp *scale, pnty + yp * scale,1,1,1);
+        
+     }
+}
+
+function supershape_demo(){
+
+
+	superShape(1, 1, 5, 23, 23, 23, 100,80, 30);
+	superShape(1, 1, 5, 13, 13, 3, 200,80, 30);
+	superShape(1, 1, 8, 3, 13, 3, 300,80, 30);
+	superShape(10,8, 16, 30, 13, 3, 450,80, 30);
+	superShape(1,1, 1, 0.5, 0.5, 0.5, 100,190, 100);
+ 
+	for (var i= 0; i <150; i++){
+  		superShape(1,1, 2, 1+i/800, 4, 8-i * 0.1, 550,350, 50);
+	}
+	for (i = 0; i <20; i++){
+  		superShape(1.1,1.2, 6, 2 + i , 4, 9 - i, 200,350, 50);
+	}
+
+
+}
+</script>
+</head>
+<body>
+<br> Superformula in HTML5 Canvas - 
+ 
+ by Alejandro Mosquera <a href="http://amsqr.blogspot.com">  (http://amsqr.blogspot.com)</a></br>
+ 
+<br> Equations from: 
+ <a href="http://en.wikipedia.org/wiki/Superformula">http://en.wikipedia.org/wiki/Superformula</a></br>
+<canvas id="mycanvas" width="800" height="600"></canvas>
+<script>
+var TWO_PI = Math.PI * 2;
+var $c = document.getElementById('mycanvas');
+var $ctx = $c.getContext('2d');
+
+$ctx.clearRect(0, 0, 800, 600);
+
+//var $image_id = $ctx.getImageData(0,0,1,1); 
+var $image_id = $ctx.createImageData(1,1); 
+var d_image  = $image_id.data;
+                     
+supershape_demo();
+//test();
+</script>
+</body>
+</html>
