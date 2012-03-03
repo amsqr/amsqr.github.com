@@ -1,0 +1,129 @@
+
+function superShapeMap(point, r1, r2, t, p) {
+    point[0] = Math.cos(t) * Math.cos(p) / r1 / r2;
+    point[1] = Math.sin(t) * Math.cos(p) / r1 / r2;
+    point[2] = Math.sin(p) / r2;
+}
+
+function ssFunc(t, p) {
+    return Math.pow(Math.pow(Math.abs(Math.cos(p[0] * t / 4)) / p[1], p[4]) +
+                    Math.pow(Math.abs(Math.sin(p[0] * t / 4)) / p[2], p[5]),
+                    1. / p[3]);
+}
+
+function createSuperShape(shader, params) {
+    var resol1 = params[params.length - 3];
+    var resol2 = params[params.length - 2];
+    // latitude 0 to pi/2 for no mirrored bottom
+    // (latitudeBegin==0 for -pi/2 to pi/2 originally)
+    var latitudeBegin = (resol2 / 4) | 0;
+    var latitudeEnd = (resol2 / 2) | 0;    // non-inclusive
+    var longitudeCount = resol1;
+
+    var vertices = [];
+    var colors = [];
+    var normals = [];
+
+    var baseColor = Array(3);
+
+    for (var i = 0; i < 3; ++i) {
+        baseColor[i] = (random.uInt() % 155 + 100) / 255.;
+    }
+
+    var currentVertex = 0;
+    for (var longitude = 0; longitude < longitudeCount; ++longitude) {
+        for (var latitude = latitudeBegin; latitude < latitudeEnd; ++latitude) {
+            var t1 = -Math.PI + longitude * 2 * Math.PI / resol1;
+            var t2 = -Math.PI + (longitude + 1) * 2 * Math.PI / resol1;
+            var p1 = -Math.PI / 2 + latitude * 2 * Math.PI / resol2;
+            var p2 = -Math.PI / 2 + (latitude + 1) * 2 * Math.PI / resol2;
+
+            var r0 = ssFunc(t1, params);
+            var r1 = ssFunc(p1, params.slice(6, 12));
+            var r2 = ssFunc(t2, params);
+            var r3 = ssFunc(p2, params.slice(6, 12));
+
+            if (r0 != 0 && r1 != 0 && r2 != 0 && r3 != 0) {
+                var pa = Array(3), pb = Array(3), pc = Array(3), pd = Array(3);
+
+                superShapeMap(pa, r0, r1, t1, p1);
+                superShapeMap(pb, r2, r1, t2, p1);
+                superShapeMap(pc, r2, r3, t2, p2);
+                superShapeMap(pd, r0, r3, t1, p2);
+
+                // kludge to set lower edge of the object to fixed level
+                if (latitude == latitudeBegin + 1) {
+                    pa[2] = pb[2] = 0;
+                }
+
+                var v1 = Array(3), v2 = Array(3), n = Array(3);
+                vector3Sub(v1, pb, pa);
+                vector3Sub(v2, pd, pa);
+
+                // Calculate normal with cross product.
+                n[0] = v1[1] * v2[2] - v1[2] * v2[1];
+                n[1] = v1[2] * v2[0] - v1[0] * v2[2];
+                n[2] = v1[0] * v2[1] - v1[1] * v2[0];
+
+                /* Pre-normalization of the normals is disabled here because
+                 * they will be normalized anyway later due to automatic
+                 * normalization (NORMALIZE). It is enabled because the
+                 * objects are scaled with scale.
+                 */
+                // Note we have to normalize by hand in the shader
+                //
+                var ca = pa[2] + 0.5;
+
+                for (var i = 0; i < 6; ++i) {
+                    normals.push(n[0], n[1], n[2]);
+                }
+                for (var i = 0; i < 6; ++i) {
+                    colors.push(clamp(ca * baseColor[0] * 255));
+                    colors.push(clamp(ca * baseColor[1] * 255));
+                    colors.push(clamp(ca * baseColor[2] * 255));
+                    colors.push(0);
+                }
+
+                vertices.push(pa[0], pa[1], pa[2]);
+                vertices.push(pb[0], pb[1], pb[2]);
+                vertices.push(pd[0], pd[1], pd[2]);
+                vertices.push(pb[0], pb[1], pb[2]);
+                vertices.push(pc[0], pc[1], pc[2]);
+                vertices.push(pd[0], pd[1], pd[2]);
+            }
+        }
+    }
+
+    return new GlObject(shader, vertices, colors, normals);
+	
+	
+var litShader = null;
+var shapeParams = [
+  // m  a     b     n1      n2     n3     m     a     b     n1     n2      n3   res1 res2 scale  (org.res1,res2)
+  [10, 1,    2,    90,      1,   -45,    8,    1,    1,    -1,     1,  -0.4 ,   20,  30, 2], // 40, 60
+  [10, 1,    2,    90,      1,   -45,    4,    1,    1,    10,     1,  -0.4 ,   20,  20, 4], // 40, 40
+  [10, 1,    2,    60,      1,   -10,    4,    1,    1,    -1,    -2,  -0.4 ,   41,  41, 1], // 82, 82
+  [ 6, 1,    1,    60,      1,   -70,    8,    1,    1,  0.4 ,     3,  0.25 ,   20,  20, 1], // 40, 40
+  [ 4, 1,    1,    30,      1,    20,   12,    1,    1,  0.4 ,     3,  0.25 ,   10,  30, 1], // 20, 60
+  [ 8, 1,    1,    30,      1,    -4,    8,    2,    1,    -1,     5,   0.5 ,   25,  26, 1], // 60, 60
+  [13, 1,    1,    30,      1,    -4,   13,    1,    1,     1,     5,      1,   30,  30, 6], // 60, 60
+  [10, 1, 1.1 , -0.5 ,   0.1 ,    70,   60,    1,    1,   -90,     0, -0.25 ,   20,  60, 8], // 60, 180
+  [ 7, 1,    1,    20,  -0.3 , -3.5 ,    6,    1,    1,    -1,  4.5 ,   0.5 ,   10,  20, 4], // 60, 80
+  [ 4, 1,    1,    10,     10,    10,    4,    1,    1,    10,    10,     10,   10,  20, 1], // 20, 40
+  [ 4, 1,    1,     1,      1,     1,    4,    1,    1,     1,     1,      1,   10,  10, 2], // 10, 10
+  [ 1, 1,    1,    38, -0.25 ,    19,    4,    1,    1,    10,    10,     10,   10,  15, 2], // 20, 40
+  [ 2, 1,    1,  0.7 ,   0.3 ,  0.2 ,    3,    1,    1,   100,   100,    100,   10,  25, 2], // 20, 50
+  [ 6, 1,    1,     1,      1,     1,    3,    1,    1,     1,     1,      1,   30,  30, 2], // 60, 60
+  [ 3, 1,    1,     1,      1,     1,    6,    1,    1,     2,     1,      1,   10,  20, 2], // 20, 40
+  [ 6, 1,    1,     6,   5.5 ,   100,    6,    1,    1,    25,    10,     10,   30,  20, 2], // 60, 40
+  [ 3, 1,    1,  0.5 ,   1.7 ,  1.7 ,    2,    1,    1,    10,    10,     10,   20,  20, 2], // 40, 40
+  [ 5, 1,    1,  0.1 ,   1.7 ,  1.7 ,    1,    1,    1,  0.3 ,  0.5 ,   0.5 ,   20,  20, 4], // 40, 40
+  [ 2, 1,    1,     6,   5.5 ,   100,    6,    1,    1,     4,    10,     10,   10,  22, 1], // 40, 40
+  [ 6, 1,    1,    -1,     70,  0.1 ,    9,    1, 0.5 ,   -98, 0.05 ,    -45,   20,  30, 4], // 60, 91
+  [ 6, 1,    1,    -1,     90, -0.1 ,    7,    1,    1,    90,  1.3 ,     34,   13,  16, 1]  // 32, 60
+]; 
+	  
+	  shapes = Array(shapeParams.length);
+  for (var i = 0; i < shapes.length; ++i) {
+    shapes[i] = createSuperShape(litShader, shapeParams[i])
+  }
