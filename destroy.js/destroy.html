@@ -1,0 +1,271 @@
+	
+<html>
+<head>
+<title>CANVAS IMAGE DESTRUCTION DEMO</title>
+<script type="text/javascript">
+TILE_WIDTH=10;
+TILE_HEIGHT=10;
+
+var mouseX,mouseY,img;
+var RAD = Math.PI/180;
+var tiles = [];
+
+function Tile(){
+	this.originX = 0;
+	this.originY = 0;
+	this.currentX = 0;
+	this.currentY = 0;
+	this.rotation = 0;
+	this.force = 0;
+	this.z = 0;
+	this.moveX= 0;
+	this.moveY= 0;
+	this.moveRotation = 0;
+	
+}
+
+
+function createTiles(){
+	var y=0;
+	while(y < 600){
+		var x=0;
+		while(x < 600){
+			var tile = new Tile();
+			
+			tile.originX = x;
+			tile.originY = y;
+			tile.currentX = tile.originX;
+			tile.currentY = tile.originY;
+			tiles.push(tile);
+			x+=TILE_HEIGHT;
+		}
+		y+=TILE_WIDTH;
+	}
+}
+
+function zindexSort(a, b){
+	return (a.force-b.force);
+}
+
+
+function explode(x, y){
+	for(var i=0; i<tiles.length; i++){
+		var tile = tiles[i];
+		
+		var xdiff = tile.currentX-x;
+		var ydiff = tile.currentY-y;
+		var dist = Math.sqrt(xdiff*xdiff + ydiff*ydiff);
+		
+		var randRange = 220+(Math.random()*30);
+		var range = randRange-dist;
+		var force = 1*(range/randRange);
+		if(force > tile.force){
+			tile.force = force;
+			var radians = Math.atan2(ydiff, xdiff);
+			tile.moveX = Math.cos(radians);
+			tile.moveY = Math.sin(radians);
+			tile.moveRotation = 0.5-Math.random();
+		}
+	}
+	tiles.sort(zindexSort);
+}
+
+
+
+function playColor(im){
+
+ if(document.createElement("canvas").getContext){ 
+		
+        ref = document.createElement("canvas"); 
+        ref.width = im.width || im.offsetWidth; 
+        ref.height =im.height  || im.offsetHeight; 
+        var context = ref.getContext("2d"); 
+        context.drawImage(im,0,0); 
+        var iData=context.getImageData(0,0,  ref.width, ref.height); 
+        im.parentNode.replaceChild(ref,im); 
+        var data   = iData.data; 
+        var length = data.length; 
+         for (var i = 0;i<length;i+=4) { 
+            var average = (data[i]+data[i+1]+data[i+2])/3; 
+              data[i]   = average/2; 
+              data[i+1] = average; 
+              data[i+2] = average/2; 
+             
+          } 
+          context.putImageData(iData, 0, 0);
+
+	}
+	
+
+}
+
+
+function init(){ 
+
+
+img = new Image();   
+var ctx = document.getElementById('canvas').getContext('2d');   
+  createTiles();
+
+  setInterval(draw,20);  
+document.onmousemove = onDocMouseMove;
+}  
+  
+function draw() {  
+
+
+
+
+var ctx = document.getElementById('canvas').getContext('2d');  
+  img.src = 'smith.jpg';
+
+  //alert(tiles.length);
+  ctx.clearRect(0, 0,600,600);
+	
+
+	for(var i=0; i<tiles.length; i++){
+		var tile = tiles[i];
+		if(tile.force > 0.0001){
+			//expand
+			tile.moveX *= tile.force;
+			tile.moveY *= tile.force;
+			tile.moveRotation *= tile.force;
+			tile.currentX += tile.moveX;
+			tile.currentY += tile.moveY;
+			tile.rotation += tile.moveRotation;
+			tile.rotation %= 360;
+			tile.force *= 0.9;
+			if(tile.currentX <= 0 || tile.currentX >= 600){
+				tile.moveX *= -1;
+			}
+			if(tile.currentY <= 0 || tile.currentY >= 600){
+				tile.moveY *= -1;
+			}
+		}else if(tile.rotation != 0 || tile.currentX != tile.originX || tile.currentY != tile.originY){
+			//contract
+			var diffx = (tile.originX-tile.currentX)*0.2;
+			var diffy = (tile.originY-tile.currentY)*0.2;
+			var diffRot = (0-tile.rotation)*0.2;
+			
+			if(Math.abs(diffx) < 0.5){
+				tile.currentX = tile.originX;
+			}else{
+				tile.currentX += diffx;
+			}
+			if(Math.abs(diffy) < 0.5){
+				tile.currentY = tile.originY;
+			}else{
+				tile.currentY += diffy;
+			}
+			if(Math.abs(diffRot) < 0.5){
+				tile.rotation = 0;
+			}else{
+				tile.rotation += diffRot;
+			}
+		}else{
+			tile.force = 0;
+		}
+		ctx.save();
+		ctx.translate(tile.currentX, tile.currentY);
+		//alert(tile.originX + '-' + tile.originY);
+		ctx.drawImage(img, tile.originX, tile.originY, TILE_WIDTH, TILE_HEIGHT, -TILE_WIDTH/2, -TILE_HEIGHT/2, TILE_WIDTH, TILE_HEIGHT);
+		ctx.restore();
+		//(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
+		}
+  //ctx.drawImage(img,0,0);
+  //mouseX-img.height/2,mouseY-img.width/2);
+
+}
+
+ 
+
+function onDocMouseMove( e )
+{
+	var ev = e ? e : window.event;
+	mouseX = ev.clientX -document.getElementById("canvas").offsetLeft;
+	mouseY = ev.clientY -document.getElementById("canvas").offsetTop;
+	//alert(mouseX + ' ' + mouseY);
+	explode(mouseX,mouseY);
+}
+
+</script>
+
+<style>
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+				
+
+   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #ffffff;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+
+  
+#content { 
+  overflow:auto; 
+  width: 1300px; 
+  background: white; 
+} 
+
+#left, #right { 
+  width: 600px; 
+ 
+  padding: 1em; 
+  background: white; 
+} 
+
+#left  { float:left;  }
+#right { float:right; } 
+
+
+		</style>
+	</head>
+	
+</head>
+<body onload="init();">
+
+<div id="dashboard">
+
+		Canvas Pixel Manipulation Demo - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+
+
+
+		</div>
+		<div id="content">
+  <div id="left">
+  Mouse over image to transform pixel's position:
+<canvas id="canvas" width="600" height="800"></canvas>  
+
+</div>
+<div id="right">Click image to transform pixel's color:
+<img style="cursor:pointer" onclick="playColor(this)" id="im" src="smith.jpg" />
+
+</div>
+
+</div>
+
+ </body>
+</html>
