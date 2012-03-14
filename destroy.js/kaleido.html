@@ -1,0 +1,282 @@
+	
+<html>
+<head>
+<title>CANVAS KALEIDOSCOPE DEMO</title>
+<script type="text/javascript">
+
+var imgLoaded = false;
+var ctx, img;
+
+function renderASCII(im){
+    im = document.getElementById("im2");
+	im2 = document.getElementById("im");
+	var paleta='@80GCLft1i;:,. ';
+	var lp=paleta.length;
+	var out='';
+	if(document.createElement("canvas").getContext){
+		var ref = document.createElement("canvas");
+        ref.width = im.width || im.offsetWidth;
+        ref.height =im.height  || im.offsetHeight;
+        var context = ref.getContext("2d");
+		context.drawImage(im,0,0);
+		var iData=context.getImageData(0,0,  ref.width, ref.height);
+		var data   = iData.data;
+		var length = data.length;
+		
+		x=0;
+		y=0;
+		r=0;
+		g=0;
+		b=0;
+		 element = document.createElement("canvas"); 
+		 element.width=1600;
+		 element.height =1600;
+		//element = document.getElementById("cancan");
+	    c = element.getContext("2d");
+		//c.drawImage(im, 0, 0);
+		
+		
+		c.fillStyle = "#000000";
+		c.font      = "normal 5px Verdana";
+		c.textBaseline = 'top';
+		//c.fillText("hello world", 20, 0);
+		//c.fillText("hello world", 20, 10);
+		
+  		for (var i = 0,l=1;i<length;i+=4,l++) {
+    		var average = (data[i]+data[i+1]+data[i+2])/3;
+			//out+=paleta.charAt(Math.round(average*lp/255));
+			r=data[i]
+			g=data[i+1]
+			b=data[i+2]
+			
+			c.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+			c.fillText(paleta.charAt(Math.round(average*lp/255)), x, y);
+			x=x+2.5;
+			if(!(l%ref.width))
+			  {
+				//out+='\n';
+				x=0;
+				y=y+5;
+				}
+			
+  		}
+  		//document.getElementById('lienzo').innerHTML=out; 
+		 im2.parentNode.replaceChild(element,im2);
+	}
+}
+
+function runb(ev)
+{
+im = ev.target; // the image, assumed to be 200x200
+	renderASCII(im);
+}
+
+
+
+/* ---------------------------------------------
+ Loads a new kaleidoscope
+ ------------------------------------------------*/
+function loadNewKaleidoscope() {
+    var canvas = document.getElementById("canvas");
+    window.ctx = canvas.getContext('2d');
+    window.img = document.getElementById("im");
+    document.onmousemove = onDocMouseMove;
+    drawKaleidoscope(window.ctx, window.img, 0, 0);
+    
+}
+
+
+/* ---------------------------------------------
+ Draws a kaleidoscope
+ ------------------------------------------------*/
+function drawKaleidoscope(ctx, img, imgX, imgY) {
+    try {
+	
+        var sqSide = 250;
+        var sqDiag = Math.sqrt(2 * sqSide * sqSide);
+        var maskSide = 500;
+        if (img.height < img.width) {
+            maskSide = Math.abs(img.height - sqDiag);
+        } else {
+            maskSide = Math.abs(img.width - sqDiag);
+        }
+        var c = 250;
+        ctx.clearRect(0, 0, 500, 500);
+        //7 (1)
+        ctx.save();
+        ctx.translate(c, c);
+        ctx.rotate(-90 * (Math.PI / 180));
+        ctx.scale(-1, -1);
+        ctx.drawImage(img, imgX, imgY, maskSide, maskSide, 0, 0, sqSide, sqSide);
+        ctx.restore();
+        //2 (4)
+        ctx.save();
+        ctx.translate(c, c);
+        ctx.rotate(-90 * (Math.PI / 180));
+        ctx.scale(1, -1);
+        ctx.drawImage(img, imgX, imgY, maskSide, maskSide, 0, 0, sqSide, sqSide);
+        ctx.restore();
+        //3 (5)
+        ctx.save();
+        ctx.translate(c, c);
+        ctx.rotate(-90 * (Math.PI / 180));
+        ctx.scale(1, 1);
+        ctx.drawImage(img, imgX, imgY, maskSide, maskSide, 0, 0, sqSide, sqSide);
+        ctx.restore();
+        //8
+        ctx.save();
+        ctx.translate(c, c);
+        ctx.rotate(-90 * (Math.PI / 180));
+        ctx.scale(-1, 1);
+        ctx.drawImage(img, imgX, imgY, maskSide, maskSide, 0, 0, sqSide, sqSide);
+        ctx.restore();
+        //1
+        ctx.save();
+        ctx.moveTo(c, c);
+        ctx.lineTo(c - sqSide, c);
+        ctx.lineTo(c - sqSide, c - sqSide);
+        ctx.lineTo(c, c);
+        ctx.clip();
+        ctx.translate(c, c);
+        ctx.scale(-1, -1);
+        ctx.drawImage(img, imgX, imgY, maskSide, maskSide, 0, 0, sqSide, sqSide);
+        ctx.restore();
+        //4
+        ctx.save();
+        ctx.moveTo(c, c);
+        ctx.lineTo(c + sqSide, c - sqSide);
+        ctx.lineTo(c + sqSide, c);
+        ctx.lineTo(c, c);
+        ctx.clip();
+        ctx.translate(c, c);
+        ctx.scale(1, -1);
+        ctx.drawImage(img, imgX, imgY, maskSide, maskSide, 0, 0, sqSide, sqSide);
+        ctx.restore();
+        //5
+        ctx.save();
+        ctx.moveTo(c, c);
+        ctx.lineTo(c + sqSide, c);
+        ctx.lineTo(c + sqSide, c + sqSide);
+        ctx.lineTo(c, c);
+        ctx.clip();
+        ctx.translate(c, c);
+        ctx.scale(1, 1);
+        ctx.drawImage(img, imgX, imgY, maskSide, maskSide, 0, 0, sqSide, sqSide);
+        ctx.restore();
+        //8
+        ctx.save();
+        ctx.moveTo(c, c);
+        ctx.lineTo(c - sqSide, c + sqSide);
+        ctx.lineTo(c - sqSide, c);
+        ctx.lineTo(c, c);
+        ctx.clip();
+        ctx.translate(c, c);
+        ctx.scale(-1, 1);
+        ctx.drawImage(img, imgX, imgY, maskSide, maskSide, 0, 0, sqSide, sqSide);
+        ctx.restore();
+    } catch(err) {
+       
+        img = '';
+        
+        ctx.clearRect(0, 0, 500, 500);
+    }
+}
+
+
+ 
+
+function onDocMouseMove( e )
+{
+	var ev = e ? e : window.event;
+	mouseX = ev.clientX -document.getElementById("canvas").offsetLeft;
+	mouseY = ev.clientY -document.getElementById("canvas").offsetTop;
+	//alert(mouseX + ' ' + mouseY);
+	drawKaleidoscope(window.ctx, window.img, mouseX/2,mouseY/2);
+}
+
+</script>
+
+<style>
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+				
+
+   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #ffffff;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+
+  
+#content { 
+  overflow:auto; 
+  width: 1300px; 
+  background: white; 
+} 
+
+#left, #right { 
+  width: 600px; 
+ 
+  padding: 1em; 
+  background: white; 
+} 
+
+#left  { float:left;  }
+#right { float:right; } 
+
+
+		</style>
+	</head>
+	
+</head>
+<body onload="loadNewKaleidoscope();">
+
+<div id="dashboard">
+
+		Canvas Pixel Manipulation Demo 2 - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+
+
+
+		</div>
+		<div id="content">
+  <div id="left">
+  Mouse over image to process kaleidoscope effect.<br>
+  Code and idea from http://www.experiencebureau.com/toys/kaleidoscope/
+  <br>
+  .
+<canvas id="canvas" width="500" height="500"></canvas>  
+</div>
+<div id="right">
+Click image to convert using an ASCII filter.<br>
+  
+<img src="nyan1.jpg" onclick="renderASCII()" id="im"/>
+<img src="nyan.jpg" style="visibility:hidden;" onclick="renderASCII(this)" id="im2"/>
+</div>
+
+
+</div>
+
+ </body>
+</html>
