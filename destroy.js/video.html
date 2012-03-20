@@ -1,0 +1,192 @@
+<!DOCTYPE html> 
+<title>Video/Canvas Demo 2</title> 
+<script> 
+
+var mode=0;
+
+document.addEventListener('DOMContentLoaded', function(){
+	var v = document.getElementById('v');
+	var canvas = document.getElementById('c');
+	var context = canvas.getContext('2d');
+	var back = document.createElement('canvas');
+	var backcontext = back.getContext('2d');
+	var cw,ch;
+ 
+	v.addEventListener('play', function(){
+	
+	if (mode==0)
+				{
+		cw = 200; //v.clientWidth;
+		ch = 100; //v.clientHeight;
+		
+		}
+		
+		else
+		
+		{
+		cw = 75; //v.clientWidth;
+		ch = 37; //v.clientHeight;
+		
+		
+		}
+		canvas.width = cw;
+		canvas.height = ch;
+		back.width = cw;
+		back.height = ch;
+		draw(v,context,backcontext,cw,ch);
+	},false);
+ 
+},false);
+ 
+
+function renderASCII(data,w,h){
+
+	var paleta='@80GCLft1i;:,. ';
+	var lp=paleta.length;
+	var out='';
+	if(document.createElement("canvas").getContext){
+		
+		var length = data.length;
+		
+		x=0;
+		y=0;
+		r=0;
+		g=0;
+		b=0;
+		 element = document.getElementById("asciicanvas"); 
+		 element.width=1600;
+		 element.height =1600;
+		 c = element.getContext("2d");
+		
+		
+		c.fillStyle = "#000000";
+		c.font      = "normal 5px Verdana";
+		c.textBaseline = 'top';
+		
+  		for (var i = 0,l=1;i<length;i+=4,l++) {
+    		var average = (data[i]+data[i+1]+data[i+2])/3;
+			if (mode==1)
+				{
+			         out+=paleta.charAt(Math.round(average*lp/255));
+			   }
+			r=data[i]
+			g=data[i+1]
+			b=data[i+2]
+			
+			if (mode==0)
+				{
+			c.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+			c.fillText(paleta.charAt(Math.round(average*lp/255)), x, y);
+			}
+			x=x+2.5;
+			if(!(l%w))
+			  {
+			    if (mode==1)
+				{
+				   out+='\n';
+				}
+				x=0;
+				y=y+5;
+				}
+			
+  		}
+		
+		if (mode==1)
+		{
+		  document.getElementById('ascii').innerHTML=out
+		 }
+  	}
+}
+
+function draw(v,c,bc,w,h) {
+	if(v.paused || v.ended)	return false;
+	// First, draw it into the backing canvas
+	bc.drawImage(v,0,0,w,h);
+	// Grab the pixel data from the backing canvas
+	var idata = bc.getImageData(0,0,w,h);
+	var data = idata.data;
+	
+	renderASCII(data,w,h);
+	
+	
+	// Start over!
+	setTimeout(draw,20,v,c,bc,w,h);
+}
+
+
+</script> 
+ 
+<div id="dashboard">
+
+		Canvas Pixel Manipulation Demo 3 - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+
+
+
+		</div>
+		<div id="content">
+  <div id="left">
+ 
+<video id=v controls loop> 
+	<source src=video.webm type=video/webm> 
+	<source src=video.mp4 type=video/mp4> 
+</video> 
+<canvas id=c></canvas> 
+
+</div>
+
+<div id="right">
+<pre id="ascii"></pre>
+ <canvas id=asciicanvas></canvas>
+</div>
+<style>
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+				
+
+   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #ffffff;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+
+  
+#content { 
+  overflow:auto; 
+  width: 1300px; 
+  background: white; 
+} 
+
+#left, #right { 
+  width: 600px; 
+ 
+  padding: 1em; 
+  background: white; 
+} 
+
+#left  { float:left;  }
+#right { float:right; } 
+
+
+		</style>
