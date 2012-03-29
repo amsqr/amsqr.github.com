@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <title>
+      Google Visualization API Sample
+    </title>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load('visualization', '1', {packages: ['treemap']});
+    </script>
+    <script type="text/javascript">
+      function drawVisualization() {
+        // Create and populate the data table.
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Name');
+        data.addColumn('string', 'Parent');
+        data.addColumn('number', 'Number of users');
+        data.addColumn('number', 'Type');
+        data.addRows([
+        ["Social Media Map (amsqr.blogspot.com)",null,0,0],
+		["Flickr","Social Media Map (amsqr.blogspot.com)",1,1],
+["Fotolog","Social Media Map (amsqr.blogspot.com)",32,1],
+["Instagram","Social Media Map (amsqr.blogspot.com)",14,1],
+["Delicious","Social Media Map (amsqr.blogspot.com)",10,10],
+["Badoo","Social Media Map (amsqr.blogspot.com)",120,20],
+["Meetic","Social Media Map (amsqr.blogspot.com)",6,20],
+["Gleeden","Social Media Map (amsqr.blogspot.com)",1,20],
+["Zosk","Social Media Map (amsqr.blogspot.com)",50,20],
+["Tuenti","Social Media Map (amsqr.blogspot.com)",13,30],
+["Multiply","Social Media Map (amsqr.blogspot.com)",11,30],
+["QuéPasa","Social Media Map (amsqr.blogspot.com)",30,30],
+["Tumblr","Social Media Map (amsqr.blogspot.com)",22,10],
+["NetLog","Social Media Map (amsqr.blogspot.com)",94,30],
+["Hi5","Social Media Map (amsqr.blogspot.com)",70,30],
+["Facebook","Social Media Map (amsqr.blogspot.com)",800,30],
+["Google+","Social Media Map (amsqr.blogspot.com)",100,30],
+["Habbo","Social Media Map (amsqr.blogspot.com)",230,30],
+["Friendster","Social Media Map (amsqr.blogspot.com)",115,30],
+["VK","Social Media Map (amsqr.blogspot.com)",100,30],
+["Sonico","Social Media Map (amsqr.blogspot.com)",50,30],
+["Twitter","Social Media Map (amsqr.blogspot.com)",500,30],
+["Viadeo","Social Media Map (amsqr.blogspot.com)",40,40],
+["Xing","Social Media Map (amsqr.blogspot.com)",11,50],
+["LinkedIn","Social Media Map (amsqr.blogspot.com)",135,50],
+["Last.fm","Social Media Map (amsqr.blogspot.com)",43,60],
+["MySpace","Social Media Map (amsqr.blogspot.com)",63,30],
+["Spotify","Social Media Map (amsqr.blogspot.com)",15,60],
+["SoundCloud","Social Media Map (amsqr.blogspot.com)",10,60],
+["Vimeo","Social Media Map (amsqr.blogspot.com)",4,40],
+["YouTube","Social Media Map (amsqr.blogspot.com)",490,40],
+["Flixter","Social Media Map (amsqr.blogspot.com)",30,40],
+["FourSquare","Social Media Map (amsqr.blogspot.com)",15,70],
+["TripAdvisor","Social Media Map (amsqr.blogspot.com)",45,80],
+["ChatRoulette","Social Media Map (amsqr.blogspot.com)",2,90],
+["GoodReads","Social Media Map (amsqr.blogspot.com)",7,100]
+
+          
+        ]);
+      
+        // Create and draw the visualization.
+        var treemap = new google.visualization.TreeMap(document.getElementById('visualization'));
+        treemap.draw(data, {
+          minColor: 'red',
+          midColor: 'yellow',
+          maxColor: 'teal',
+          headerHeight: 30,
+          fontColor: 'black',
+          showScale: false});
+      }
+      
+
+      google.setOnLoadCallback(drawVisualization);
+    </script>
+  </head>
+  <body style="font-family: Arial;border: 0 none;">
+    <div id="visualization" style="width: 1200px; height: 600px;"></div>
+  </body>
+</html>
