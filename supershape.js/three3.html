@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 	<head>
-		<title>three.js webgl - geometry hierarchy 2</title>
+		<title>three.js webgl </title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<style>
@@ -35,13 +35,13 @@
 
   }
 
-  
 		</style>
 	</head>
 	<body>
+
 <div id="dashboard">
 
-		Drawing 3D SuperShapes with Three.js - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+		Simple Texture in Three.js - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
 
 
 
@@ -49,72 +49,42 @@
 		<script src="Three.js"></script>
 		<script src="Stats.js"></script>
 		<script src="DAT.GUI.min.js"></script>
+		<script src="ShaderExtras.js"></script>
+		<script src="EffectComposer.js"></script>
+		<script src="RenderPass.js"></script>
+		<script src="ShaderPass.js"></script>
+		<script src="MaskPass.js"></script>
+		<script src="BloomPass.js"></script>
+		<script src="FilmPass.js"></script>
 
 		<script>
+ var camera, scene, renderer,
+    geometry, material, mesh;
 
-			var container, stats;
+    init();
+	 animate();
+    
 
-			var camera, scene, renderer;
+    function init() {
 
-			var geometry, root;
-			var plane;
-			var mouseX = 0, mouseY = 0;
-			
-			var EffectController = function() {
-				this.scaler= 1;
-				 this.a1= 1;
-				 this.a2= 1;
-				 this.step = 0.05;
-				 this.n1=4;
-				this.n2=12;
-				 this.n3=15;
-				 this.n4=15;
-			};
+        scene = new THREE.Scene();
 
-           var effectController =  new EffectController();
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+		
+        camera.position.z = 600;
+		
+        scene.add(camera);
 
-			var windowHalfX = window.innerWidth / 2;
-			var windowHalfY = window.innerHeight / 2;
-
-
-			init();
-			animate();
-
-			function init() {
-
-				container = document.createElement( 'div' );
-				document.body.appendChild( container );
-
-				scene = new THREE.Scene();
-
-				scene.fog = new THREE.FogExp2( 0x000104, 0.0000675 );
-
-				camera = new THREE.PerspectiveCamera( 20,             // Field of view
-                                             window.innerWidth / window.innerHeight,      // Aspect ratio
-                                            1,            // Near plane
-                                            3000           // Far plane );
-											);
-				//camera.position.z = 10;
-				
-				camera.position.set( 1, 1, 10 );
-                camera.lookAt( scene.position );
-			    //camera.position.z = 2;
-				scene.add( camera );
-				
-             //var cube2 = new THREE.Mesh(
-               //                     new THREE.CubeGeometry( 2, 2, 2 ),
-                 //                   new THREE.MeshLambertMaterial({
-					//map: THREE.ImageUtils.loadTexture("bg.jpg")
-				//})
-                  //              );
-				//cube2.overdraw = true;
-            //scene.add( cube2 );
-			geometry = new THREE.PlaneGeometry( 8, 5, 1, 1);
-			material = new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture('bg.jpg')});
-			plane = new THREE.Mesh( geometry, material );
-			plane.doubleSided = true;
-			scene.addObject( plane );
-	  
+        // material
+        var material = new THREE.MeshLambertMaterial({
+            map: THREE.ImageUtils.loadTexture("texture.jpg")
+        });
+ 
+        // cube
+        mesh = new THREE.Mesh(new THREE.CubeGeometry(300, 300, 300), material);
+        mesh.overdraw = true;
+        scene.add(mesh);
+ 
         // add subtle ambient lighting
         var ambientLight = new THREE.AmbientLight(0x555555);
         scene.add(ambientLight);
@@ -123,248 +93,33 @@
         var directionalLight = new THREE.DirectionalLight(0xffffff);
         directionalLight.position.set(1, 1, 1).normalize();
         scene.add(directionalLight);
-				
-				renderer = new THREE.WebGLRenderer();
 
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.sortObjects = false;
-				container.appendChild( renderer.domElement );
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
 
-				stats = new Stats();
-				stats.domElement.style.position = 'absolute';
-				stats.domElement.style.top = '0px';
-				stats.domElement.style.zIndex = 100;
-				container.appendChild( stats.domElement );
-				
-				var matChanger = function( ) {
-				
-				//scene.remove(particles);
-			    //var particles=drawSuperformula(effectController.step,effectController.n1,effectController.n2,effectController.n3,effectController.n4,effectController.a1,effectController.a2,effectController.scaler);
-				//scene.add( particles );
-				
-				};
+        document.body.appendChild( renderer.domElement );
 
-				var gui = new DAT.GUI();
-				gui.add( effectController, "scaler", 1, 3.0, 0.25 ).onChange( matChanger );
-				gui.add( effectController, "a1", 1, 50, 0.5 ).onChange( matChanger );
-				gui.add( effectController, "a2", 0.1, 50, 0.1 ).onChange( matChanger );
-				gui.add( effectController, "step", 0.01, 0.5, 0.001 ).onChange( matChanger );
-				gui.add( effectController, "n1", 1, 50.0, 0.5 ).onChange( matChanger );
-				gui.add( effectController, "n2", 1, 50.0,0.5 ).onChange( matChanger );
-				gui.add( effectController, "n3",1, 50.0, 0.5).onChange( matChanger );
-				gui.add( effectController, "n4", 1, 50.0, 0.5 ).onChange( matChanger );
-				gui.close();
-				
-				
-				
-				
-				
-				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				document.addEventListener( 'touchstart', onDocumentTouchStart, false );
-				document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+    }
 
-
-			}
-
-			function onDocumentMouseMove(event) {
-
-				mouseX = ( event.clientX - windowHalfX ) ;
-				mouseY = ( event.clientY - windowHalfY ) ;
-
-			}
-
-			
-			function onDocumentTouchStart( event ) {
-
-				if ( event.touches.length == 1 ) {
-
-					event.preventDefault();
-
-					mouseX = event.touches[ 0 ].pageX - windowHalfX;
-					mouseY = event.touches[ 0 ].pageY - windowHalfY;
-
-				}
-			}
-
-			function onDocumentTouchMove( event ) {
-
-				if ( event.touches.length == 1 ) {
-
-					event.preventDefault();
-
-					mouseX = event.touches[ 0 ].pageX - windowHalfX;
-					mouseY = event.touches[ 0 ].pageY - windowHalfY;
-
-				}
-
-			}
-
-	  
-			
-			function animate() {
-
-				t = new Date().getTime();
-				//camera.position.x = Math.sin(t/1000)*10;
-				//camera.position.z = Math.cos(t/1000)*10;
-				//camera.position.y = Math.cos(t/1000)*10;
-				
-				//plane.position.x  =camera.position.x ;
-				//plane.position.y  =camera.position.y ;
-				//plane.position.z  =camera.position.z ;
-				
-				camera.lookAt(scene.position);
-				requestAnimationFrame( animate );
-				//doPhysics(0.1);
-				render();
-				stats.update();
-
-			}
-
-			function doPhysics(dt) {
-				 for(var i=0;i<plane.geometry.vertices.length;i++) {
-					plane.geometry.vertices[i].position.y += -9.8*dt;
-					if(plane.geometry.vertices[i].position.y <0)
-					   plane.geometry.vertices[i].position.y =0;
-					}
-     
-			}
-
-			function render() {
-
-
-				var time = Date.now() * 0.00005;
-				var rx = Math.sin( time * 0.7 ) * 0.2;
-				var	ry = Math.sin( time * 0.3 ) * 0.1;
-				var	rz = Math.sin( time * 0.2 ) * 0.1;
-				
-
-				//camera.position.x += ( mouseX - camera.position.x ) * 0.036;
-				//camera.position.y += ( - (mouseY) - camera.position.y ) * 0.036;
-				
-				//camera.lookAt( scene.position );
-
-				 for ( var i = 0; i < scene.objects.length; i ++ ) {
-                        scene.objects[ i ].rotation.y = time * ( i % 2 ? 1 : -1 );
-                }
-				//plane.rotation.y = ry;
-				//scene.add(plane);
-				
-
-				renderer.clear();
-
-				renderer.render( scene, camera );
-
-			}
-
-			
-			
+    function animate() {
 		
-		 
+        // note: three.js includes requestAnimationFrame shim
+        requestAnimationFrame( animate );
+        render();
 
+    }
 
-		function drawSuperformula(step,n1,n2,n3,n4,a1,a2,scaler)
-		{
-					
+    function render() {
 
-			var N_X = Math.round(2*Math.PI/step);
-			var N_Y = Math.round(Math.PI/step);
-			var v = THREE.Vector3();
-			var verticess = new Array();
-			geometry = new THREE.Geometry();
+        mesh.rotation.x += 0.01;
+        mesh.rotation.y += 0.02;
 
-			for(var x = 0; x < N_X; x++){
+        renderer.render( scene, camera );
+		
+    }
 
-				var i = -Math.PI + x*step;
-				
-				for(var y=0;y<N_Y;y++ ){
-				
-					var j = -Math.PI/2.0 + y*step;
+</script>
 
-					var t1,t2,r,raux1,r1,raux2,r2;      
-					var xx = 0;
-					var yy = 0;
-					var zz = 0;             
-
-					t1 = Math.cos( n1 * i/4 );
-					t1 = 1/a1 * Math.abs(t1); 
-					t1 = Math.abs(t1);
-
-					t2 = Math.sin(n1 * i/4);
-					t2 = 1/a2 * Math.abs(t2);
-					t2 = Math.abs(t2);
-					raux1 = Math.pow( t1 , n3 ) + Math.pow( t2 , n4 )
-
-					r1 = Math.abs(raux1);
-				r1 = Math.pow(r1, (-1/n2));
-
-				t1 = Math.cos(n1 * j/4);
-				t1 = 1/a1 * Math.abs(t1);
-				t1 = Math.abs(t1);
-
-				t2 = Math.sin(n1 * j/4);
-				t2 = 1/a2 * Math.abs(t2);
-				t2 = Math.abs(t2);
-
-				raux2 = Math.pow(t1, n3) + Math.pow(t2, n4);
-
-				r2 = Math.abs(raux2);
-				r2 = Math.pow(r2, (-1/n2));
-
-				xx = r1 * Math.cos(i) * r2 * Math.cos(j) * scaler;
-				yy = r1 * Math.sin(i) * r2 * Math.cos(j) * scaler;
-				zz = r2 * Math.sin(j) * scaler;  
-
-				 geometry.vertices.push(new THREE.Vertex(new THREE.Vector3(xx, yy, zz)));
-				 //verticess.push(new THREE.Vector3(xx, yy, zz));
-				
-
-				 
-				 
-				}
-
-			}
-
-			//for(var i = 0; i < N_X-1; i++){
-			  //  for(var j = 0; j < N_Y-1; j++ ){
-
-				// v = verticess[i * N_Y + j];
-				 //var v1 = new THREE.Vertex(v.x, v.y, v.z);
-				 //geometry.vertices.push(v1);
-				 //v = verticess[i * N_Y + j + 1];
-				 //var v2 = new THREE.Vertex(v.x, v.y, v.z);
-				 //geometry.vertices.push(v2);
-				 //v = verticess[(i + 1) * N_Y + j + 1];
-				 //var v3 = new THREE.Vertex(v.x, v.y, v.z);
-				 //geometry.vertices.push(v3);
-				 //v = verticess[ (i + 1) * N_Y + j];
-				 //var v4 = new THREE.Vertex(v.x, v.y, v.z);
-				 //geometry.vertices.push(v4);
-				 //geometry.faces.push(new THREE.Face4(0,1,2,3));
-				 //geometry.faces.push( new THREE.Face4( v1, v2, v3, v4 ) );
-				//}
-			//}
-
-			//geometry.computeFaceNormals();
-			//geometry.computeCentroids();
-
-			//mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0xFFFFFF, opacity: 1}));
-			//mesh.doubleSided = true;
-
-			
-
-material = new THREE.ParticleBasicMaterial({size: 0.1, color: 0xFF2211, opacity:0.7, depthTest:0, transparent: true, blending: THREE.AdditiveBlending});
-				//material = new THREE.ParticleBasicMaterial({ color: 0xFF2211, size: 0.1 });
-							material.color.setHSV( 1.0, 0.8, 0.8 );
-
-							particles = new THREE.ParticleSystem( geometry, material );
-							particles.sortParticles = true;
-							
-			return particles;
-
-		}
-
-
-		</script>
 
 	</body>
 </html>

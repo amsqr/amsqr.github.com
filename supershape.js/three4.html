@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>three.js webgl </title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+			   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #ffffff;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+
+		</style>
+	</head>
+	<body>
+
+<div id="dashboard">
+
+		Runtime Textures in Three.js - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+
+
+
+		</div>
+		<script src="Three.js"></script>
+		<script src="Stats.js"></script>
+		<script src="DAT.GUI.min.js"></script>
+		<script src="ShaderExtras.js"></script>
+		<script src="EffectComposer.js"></script>
+		<script src="RenderPass.js"></script>
+		<script src="ShaderPass.js"></script>
+		<script src="MaskPass.js"></script>
+		<script src="BloomPass.js"></script>
+		<script src="FilmPass.js"></script>
+
+
+		 
+		<script>
+ var camera, scene, renderer,
+    geometry, material, mesh, gl,data;
+
+    init();
+	 animate();
+    
+
+    function init() {
+
+		function RGBA()
+{
+	this.r=0;
+	this.g=0;
+	this.b=0;
+	this.a=255;
+};
+
+		renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+		//renderer.setClearColorHex( 0x000000, 1 );
+		
+        gl = renderer.getContext();
+		
+        scene = new THREE.Scene();
+		
+		
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+		
+        camera.position.z = 600;
+		
+        scene.add(camera);
+		
+		
+			
+			data = genTex(0.25,0.09,256);
+            dataTex = createTextureFromData( data.width, data.height, data.pixels);
+			//dataTex = new THREE.DataTexture( data.pixels, data.width, data.height, THREE.RGBFormat );
+			//dataTex.needsUpdate = true;
+			
+			
+			
+		 // material
+        var material = new THREE.MeshLambertMaterial({
+          //  map: THREE.ImageUtils.loadTexture("texture.jpg")
+		  map: dataTex
+        });
+		
+        // cube
+        mesh = new THREE.Mesh(new THREE.SphereGeometry(200, 50, 50), material);
+        mesh.overdraw = true;
+        scene.add(mesh);
+ 
+        // add subtle ambient lighting
+        var ambientLight = new THREE.AmbientLight(0x555555);
+        scene.add(ambientLight);
+ 
+        // add directional light source
+        var directionalLight = new THREE.DirectionalLight(0xffffff);
+        directionalLight.position.set(1, 1, 1).normalize();
+        //scene.add(directionalLight);
+	
+        
+        document.body.appendChild( renderer.domElement );
+
+    }
+
+    function animate() {
+		
+        // note: three.js includes requestAnimationFrame shim
+        requestAnimationFrame( animate );
+        render();
+
+    }
+
+    function render() {
+
+        //mesh.rotation.x += 0.01;
+        //mesh.rotation.y += 0.02;
+
+        renderer.render( scene, camera );
+		
+		if (Math.random()>0.95)
+		{
+		
+		scene.remove(mesh);
+			data = genTex(Math.random(),Math.random(),256);
+            dataTex = createTextureFromData( data.width, data.height, data.pixels);
+			//dataTex = new THREE.DataTexture( data.pixels, data.width, data.height, THREE.RGBFormat );
+			//dataTex.needsUpdate = true;
+			
+			
+			
+		 // material
+        var material = new THREE.MeshLambertMaterial({
+          //  map: THREE.ImageUtils.loadTexture("texture.jpg")
+		  map: dataTex
+        });
+		
+        // cube
+        mesh = new THREE.Mesh(new THREE.SphereGeometry(200, 50, 50), material);
+        mesh.overdraw = true;
+        scene.add(mesh);
+		
+		}
+		
+    }
+	
+	 function createTextureFromData ( width, height, data, callback ) {
+            if (!gl.getExtension("OES_texture_float")) {
+               throw("Requires OES_texture_float extension");
+            }
+            texture = new THREE.Texture( );
+            texture.needsUpdate = false;
+            texture.__webglTexture = gl.createTexture();
+            
+            gl.bindTexture( gl.TEXTURE_2D, texture.__webglTexture );
+            
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, new Float32Array(data) );
+            texture.__webglInit = false;
+            
+            gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+            gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+            gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+            gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST );
+            gl.generateMipmap( gl.TEXTURE_2D );
+            gl.bindTexture( gl.TEXTURE_2D, null )
+            
+            return texture;
+         }
+
+		function genTex(dx,dy,amplitude)
+		{
+		
+		
+		amplitude/=256;
+		
+		
+        data = {
+               pixels: [],
+               width: 256,
+               height: 256
+            };
+		
+        
+		
+            
+			for (var y=0; y<data.width; y++)
+			{
+				for (var x=0; x<data.height; x++)
+				{
+				data.pixels.push(((63.5*Math.sin(dx*x)+127+63.5*Math.sin(dy*y) + ( 128 * Math.sin(Math.PI * y  / 32)))*amplitude));
+				data.pixels.push(((63.5*Math.sin(dx*x)+127+63.5*Math.sin(dy*y) + (128 * Math.sin(Math.PI * y / 64)))*amplitude));
+				data.pixels.push(((63.5*Math.sin(dx*x)+127+63.5*Math.sin(dy*y) + ( 128 * Math.sin(Math.PI * y/ 128)))*amplitude));
+				data.pixels.push(1);
+				}
+				
+				
+			}
+		
+		return data;
+		}
+</script>
+
+
+	</body>
+</html>
+
+
+
+
+
+
+
