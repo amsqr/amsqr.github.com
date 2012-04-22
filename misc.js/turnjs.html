@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="turn.min.js"></script>
+
+<style type="text/css">
+body{
+	background:#ccc;
+}
+#magazine{
+	width:400px;
+	height:200px;
+}
+#magazine .turn-page{
+	background-color:#ccc;
+	background-size:100% 100%;
+	
+}
+</style>
+</head>
+<body>
+
+<div id="magazine">
+   <div style="font-size:25px; color:white; background-color: black; text-align: center"
+   <br>
+   </br>
+ 
+    PAGING DEMO
+  
+  
+  
+</div>
+	<div style="background-image:url(http://lorempixel.com/g/400/200/);"></div>
+	<div style="background-image:url(http://lorempixel.com/g/300/200/);"></div>
+	<div style="background-image:url(http://lorempixel.com/g/200/200/);"></div>
+	<div style="background-image:url(http://lorempixel.com/g/400/300/);"></div>
+	<div style="background-image:url(http://lorempixel.com/g/300/400/);"></div>
+	<div style="background-image:url(http://lorempixel.com/g/200/400/);"></div>
+	<div style="background-image:url(http://lorempixel.com/g/800/600/);"></div>
+	<div style="background-image:url(http://lorempixel.com/g/800/400/);"></div>
+	<div style="background-image:url(http://lorempixel.com/g/800/500/);"></div>
+	<div style="background-image:url(http://lorempixel.com/g/600/800/);"></div>
+</div>
+
+
+<script type="text/javascript">
+
+	$(window).ready(function() {
+		$('#magazine').turn({
+							display: 'double',
+							acceleration: true,
+							gradients: !$.isTouch,
+							elevation:50
+							
+						});
+	});
+	
+	
+	$(window).bind('keydown', function(e){
+		
+		if (e.keyCode==37)
+			$('#magazine').turn('previous');
+		else if (e.keyCode==39)
+			$('#magazine').turn('next');
+			
+	});
+
+</script>
+
+</body>
+</html>
