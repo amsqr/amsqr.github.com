@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>Loading, please wait</title>
+
+    <script type="text/javascript">
+        var i=0;
+		var res=0;
+		var context;
+		var sizex;
+		var sizey;
+		var total_width;
+		
+        window.onload = function() {
+            var elem = document.getElementById('myCanvas');
+            if (!elem || !elem.getContext) {
+                return;
+            }
+			sizex=elem.width;
+			sizey=elem.height;
+			total_width=sizex-(2*sizex/10);
+            context = elem.getContext('2d');
+            if (!context) {
+                return;
+            }
+			
+			
+			context.fillStyle   = '#000';
+			context.strokeStyle = '#fff';
+			context.fillRect(0,0,sizex,sizey);
+			context.lineWidth  = 3;
+			context.fill();
+			
+			draw();
+            res = setInterval(draw, 30);
+        }
+
+        function draw() {
+            i+=1;
+            rectangle(i)
+			
+			if (i>=total_width) {
+                clearInterval(res);
+            }
+            }
+        
+
+		function rectangle(i)
+		{
+		context.fillStyle = "white";
+		context.beginPath();
+		context.rect(sizex/10, ((sizey+(sizey/15))/2)-(sizey/15), 1+i, sizey/15);
+		context.closePath();
+		context.fill()
+		}
+    </script>
+
+</head>
+<body>
+   
+    <p>
+        <canvas id="myCanvas" width="800" height="600">Your browser does not have support for canvas.</canvas>
+    </p>
+
+
+
+</body></html>
