@@ -1,0 +1,166 @@
+<html>
+<head>
+<script>
+var sizeX=512;
+var sizeY=512;
+var andsizeX=511;
+var andsizeY=511;
+var layer =[sizeX*sizeY];
+var seedValue;
+
+
+function RGBA()
+{
+	this.r=0;
+	this.g=0;
+	this.b=0;
+	this.a=255;
+};
+
+function myRandom()
+{
+        seedValue = (seedValue * 22695477 + 1) & 0xffffff;
+        return (seedValue >> 16) & 0x7fff;
+}
+
+function initstuff()
+{
+for (var x=0; x<(sizeX * sizeY); x+=1)
+		{
+			layer[x] = new RGBA();
+		}
+}
+
+function writestuff()
+{
+
+ref = document.getElementById('canvas');
+ctx = ref.getContext('2d');
+imageData = ctx.createImageData(sizeX, sizeY);
+//alert(i);
+for (var x=0; x<(sizeX * sizeY); x+=1)
+{
+		  index=4*x;
+		    imageData.data[index] =  Math.round(layer[x].r);
+			imageData.data[index+1] =  Math.round(layer[x].g);
+			imageData.data[index+2] =  Math.round(layer[x].b);
+			imageData.data[index+3] = Math.round(layer[x].a)
+	}
+		
+		
+		
+		
+		
+ctx.putImageData(imageData, 0, 0); 
+}
+function cellMachine(seed,rule)
+{
+
+
+ var x,y,base_off,m ;
+     var c = new RGBA();
+
+  seedValue=seed;
+
+  
+  c.r=255; c.g=255; c.b=255;
+
+  for (var x=0; x<sizeX;x++)
+  {
+  if ((myRandom() << 100) == 0)
+  {
+     layer[x]=c;
+	 }
+   
+}
+
+  base_off=0;
+  for (var y=1;y<sizeY;y++)
+  {
+   for (var x=0; x<sizeX;x++)
+   {
+    if (layer[((x-1)&andsizeX)+base_off].r!=0) 
+	  {
+	   m=1;
+	   }
+     else 
+	   {
+	    m=0;
+		}
+    if (layer[x+base_off].r!=0) 
+        {	m=m|2;
+		 }
+		 
+    if (layer[((x+1)&andsizeX) +base_off].r!=0) 
+	  {
+	   m=m|4;
+	   }
+
+    if (((1<<m)&rule)!=0)
+	 {
+	  layer[x+base_off+sizeX].r=c.r;
+	  layer[x+base_off+sizeX].g=c.g;
+	  layer[x+base_off+sizeX].b=c.b;
+	  }
+   }
+   
+   //
+   base_off=base_off + sizeX;
+  }
+
+}
+
+</script>
+<script>
+
+/*
+
+ 
+ Copyright (C) 2012 Alejandro Mosquera <amsqr2@gmail.com>
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, version 3 of the License.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+
+
+</script>
+</head>
+<body>
+<br> RULETOOL: A CELLULAR AUTOMATON DEMO</br> 
+ <br>
+ by Alejandro Mosquera <a href="http://amsqr.blogspot.com">  (http://amsqr.blogspot.com)</a></br>
+ 
+<br> Select rule number:</br>
+<div  style="float: left;">
+<input id="slider" type="range"  min="0" max="255" value="0" onchange="showValue(this.value)"/>
+<span id="range">0</span>
+</div>
+<div  style="float: right;">
+<canvas id="canvas" width="512" height="512"></canvas>
+</div>
+
+
+
+
+<script>
+function showValue(val)
+{
+document.getElementById("range").innerHTML=val;
+initstuff();
+cellMachine(1000,val);
+writestuff();
+}
+</script>
+</body>
+</html>
