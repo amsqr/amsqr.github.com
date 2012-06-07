@@ -1,0 +1,421 @@
+<html>
+<head>
+<style>
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+				
+
+   #dashboard{
+
+ 
+
+  height:100px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #ffffff;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  
+  #spacer{
+
+ 
+
+  height:10px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:white  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: white;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  
+  #wrapper {
+
+position: absolute;
+
+
+margin-left: 25%;
+margin-right: 25%;
+
+
+}
+#stage
+{
+ background: white;
+}
+  </style>
+</head>
+<body>
+<script src="jquery.min.js"></script>
+<div id="dashboard">
+
+		Canvas Pixel Manipulation Demo 5 - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+        <br></br>Original code and idea from  <a href="http://textify.it">Hakim El Hattab</a> 
+
+
+		</div>
+		
+		<div id="spacer">
+		</div>
+		<div id="wrapper">
+	
+		
+		<select id="combo" onClick="javascript:lol();" onChange="comboChanged(this.options[this.selectedIndex].value);">
+		<option value="Default">Default</option>
+		<option value="Pointillism">Pointillism</option>
+		<option value="Mosaic">Mosaic</option>
+		<option value="Bubbles">Bubbles</option>
+		<option value="@#%">@#%</option>
+		<option value="Pixelate">Pixelate</option>
+		<option value="Binary">Binary</option>
+		<option value="StarStruck">StarStruck</option>
+		<option value="Mosaic">Mosaic</option>
+		<option value="Snow">Snow</option>
+		<option value="Dash">Dash</option>
+		<option value="Stitch">Stitch</option>
+		
+		</select>
+
+		
+		<b id="myLabel">Drop Image Here (can be slow with big images)</b><button onclick="saveImage()">Save as Image</button> 
+		<div id="stage" style="width:578px; height:400px">
+		
+				<canvas id="myCanvas">
+					
+				
+				</canvas>
+			
+		</div>
+		
+			</div>
+
+<script>
+
+function lol()
+{
+//document.getElementById('myLabel').innerHTML = "Processing...";
+
+}
+function renderMode(sel)
+{
+	this.characterSet= "ABC";
+	this.characterLimit= 13E3;
+	this.characterScale= 1.2;
+    this.characterFontFamily= "AppleGothic";
+    this.characterFontWeight= "bold";
+    this.backgroundColor="#333";
+	this.backgroundColor = "transparent";
+	
+	if (sel == 'Pointillism') 
+	{
+     this.characterSet= "\u2022";
+     this.characterLimit= 18E3;
+     this.characterScale= 2.5;
+     this.characterFontFamily= "Comic Sans MS";
+     this.characterFontWeight= "bold";
+     this.backgroundColor= "#333";
+                }
+				
+    if (sel == 'Mosaic') 
+	{ 
+       this.characterSet= "\u25b2\u25bc\u25c0\u25ba\u25c6";
+       this.characterLimit= 13E3;
+       this.characterScale= 1.5;
+        this.characterFontFamily= "Helvetica";
+       this.characterFontWeight= "normal";
+      this.backgroundColor= "#333";
+                }
+				
+	 if (sel == 'Bubbles') 
+	{ 
+				
+     this.characterSet= "oO\u25cc\u25ce";
+                    this.characterLimit= 16E3;
+                    this.characterScale= 1.5;
+                    this.characterFontFamily= "Arial";
+                    this.characterFontWeight= "normal";
+                    this.backgroundColor= "#333";
+                }
+				
+         if (sel == "@#%") {
+                  
+                    this.characterSet= "@#%";
+                    this.characterLimit= 16E3;
+                    this.characterScale= 1.5;
+                    this.characterFontFamily= "monospace";
+                    this.characterFontWeight= "normal";
+                    this.backgroundColor= "#333";
+                }
+				
+                 if (sel == 'Pixelate') {
+                  
+                    this.characterSet= "\u25fc";
+                    this.characterLimit= 12E3;
+                    this.characterScale= 1.1;
+                    this.characterFontFamily= "Arial";
+                    this.characterFontWeight= "normal";
+                    this.backgroundColor= "#333";
+                }
+                 if (sel == 'Binary') {
+                   
+                    this.characterSet= "01";
+                    this.characterLimit= 1E4;
+                    this.characterScale= 1.5;
+                    this.characterFontFamily= "Arial";
+                    this.characterFontWeight= "normal";
+                    this.backgroundColor= "#333";
+                }
+				
+                 if (sel == 'StarStruck') {
+                   
+                    this.characterSet= "\u2726\u2729\u272a\u272d";
+                    this.characterLimit= 12E3;
+                    this.characterScale= 2;
+                    this.characterFontFamily= "Helvetica";
+                    this.characterFontWeight= "normal";
+                    this.backgroundColor= "#333";
+                }
+                 if (sel == 'Snow') {
+                    
+                    this.characterSet= "\u2746\u2747\u274b";
+                    this.characterLimit= 12E3;
+                    this.characterScale= 2;
+                    this.characterFontFamily= "Arial";
+                    this.characterFontWeight= "normal";
+                    this.backgroundColor= "#333";
+                }
+				
+                 if (sel == 'Dash') {
+                    
+                    this.characterSet= "/\\";
+                    this.characterLimit= 17E3;
+                    this.characterScale= 2;
+                    this.characterFontFamily= "Arial";
+                    this.characterFontWeight= "normal";
+                    this.backgroundColor= "#333";
+                }
+                 if (sel == 'Stitch') {
+                    
+                    this.characterSet= "\u2716\u2715";
+                    this.characterLimit= 9E3;
+                    this.characterScale= 2;
+                    this.characterFontFamily= "Helvetica";
+                    this.characterFontWeight= "normal";
+                    this.backgroundColor= "#333";
+                }
+	
+}
+function comboChanged(val)
+{
+rederm = new renderMode(val);
+run(rederm);
+document.getElementById('myLabel').innerHTML = "Drop Image Here (can be slow with big images)";
+}
+/*<canvas id="myCanvas" >
+</canvas>
+var canvas = document.getElementById("myCanvas");
+var context = canvas.getContext("2d");
+		
+window.onload = function() {
+        
+        var imageObj = new Image();
+
+        imageObj.onload = function() {
+          context.drawImage(imageObj, 69, 50);
+		  run();
+        };
+        imageObj.src = "a.jpg";
+      };*/
+var _inputImage;
+loadSample();
+
+function loadSample() {
+    document.getElementById('myLabel').innerHTML = "Processing...";
+			
+	_inputImage = new Image();
+	_inputImage.src = ("123.jpg");
+
+	_inputImage.onload = function() {
+	    rederm = new renderMode('Default');
+run(rederm);
+		
+		document.getElementById('myLabel').innerHTML = "Drop Image Here (can be slow with big images)";
+	
+		//
+	};
+}
+
+
+$(document).ready( function() {
+
+	
+
+	//init image drag and drop
+	if (typeof(FileReader) != "undefined") {
+
+		window.addEventListener('dragover', function(event) {
+			event.preventDefault();
+		}, false);
+		window.addEventListener('drop', function(event) {
+			event.preventDefault();
+
+			var file = event.dataTransfer.files[0];
+			var fileType = file.type;
+			if (!fileType.match(/image\/\w+/)) {
+				alert("Only image files supported.");
+				return;
+			}
+			
+			var reader = new FileReader();
+			document.getElementById('myLabel').innerHTML = "Processing...";
+			
+			reader.onload = function() {
+				
+				_inputImage = new Image();
+				_inputImage.src = reader.result;
+
+				_inputImage.onload = function() {
+					rederm = new renderMode('Default');
+					run(rederm);
+					
+					
+					document.getElementById('myLabel').innerHTML = "Drop Image Here (can be slow with big images)";
+				};
+			};
+			reader.readAsDataURL(file);
+		}, false);
+	}
+	// stop the user getting a text cursor
+	document.onselectstart = function() {
+		return false;
+	};
+	_stage = document.getElementById("stage");
+
+	$("#loadSample").click( function() {
+		loadSample();
+	});
+	
+	//init mouse listeners
+	
+	$(window).mousedown( function() {
+		_enableMouseMove = true;
+	});
+	$(window).mouseup( function() {
+		_enableMouseMove = false;
+	});
+	
+	});
+function run(mode) {
+
+			
+			_imageWidth = _inputImage.width;
+			_imageHeight = _inputImage.height;
+			canvas = document.getElementById("myCanvas");
+			canvas.width = _imageWidth
+			canvas.height = _imageHeight;
+			context = canvas.getContext('2d');
+			context.drawImage(_inputImage, 0, 0);
+		
+			
+			j = canvas.width;
+            i = canvas.height;
+			r = context.getImageData(0, 0, canvas.width, canvas.height).data;
+			I = r.length / 4;
+			S = 10;
+            H = 15;
+			
+			
+			
+			characterSet= mode.characterSet;
+            characterLimit= mode.characterLimit;
+            characterScale= mode.characterScale;
+            characterFontFamily= mode.characterFontFamily;
+            characterFontWeight= mode.characterFontWeight;
+            backgroundColor=mode.backgroundColor;
+			
+			
+			
+			
+			filter="";
+			
+			var g = backgroundColor === "transparent";
+			f =  document.getElementById("myCanvas"); //document.createElement("canvas");
+			f.width=canvas.width;
+			f.height=canvas.height;
+			
+            h = f.getContext("2d");
+			//document.body.appendChild(f);
+			
+			
+            for (l = 0; l < (canvas.width* canvas.height); l++) {
+                var d = Math.floor(Math.random() * I),
+                    b = d * 4,
+                    c = Math.floor(d / j),
+                    d = Math.round((d / j - c) * j),
+                    f = Math.round(S + Math.random() * H) * characterScale,
+                       i = characterSet[Math.floor(Math.random() * characterSet.length)];
+                   e = {
+                        r: r[b],
+                        g: r[b + 1],
+                        b: r[b + 2],
+                        a: (0.3 + Math.random() * 0.7).toFixed(2)
+                    }
+                 b = r[b + 3] / 255;
+                if (g && b === 0) e.a = 0;
+                if (filter === "Black & White") e.r = e.g = e.b = Math.round((e.r + e.g + e.b) / 3);
+                else if (filter === "Sepia") e.r = e.g = e.b = Math.round((e.r + e.g + e.b) / 3), e.b = Math.round(e.b * 0.85);
+                d -= f / 2;
+				c += f / 2;
+				
+				h.save(); 
+				h.font = characterFontWeight + " " + f + "px " + characterFontFamily;
+				h.fillStyle = "rgba(" + e.r + "," + e.g + "," + e.b + ", " + e.a + ")";
+				h.fillText(i, d, c);
+				h.restore();
+				
+              }
+			  document.getElementById('myLabel').innerHTML = "Drop Image Here (can be slow with big images)";
+            }
+			
+function saveImage()
+{
+  var canvas1 = document.getElementById("myCanvas");        
+  if (canvas1.getContext) {
+     var ctx = canvas1.getContext("2d");                
+     var myImage = canvas1.toDataURL("image/png");      
+  }
+ 
+ window.location = myImage;                         
+
+}  
+</script>
+</body>
+</html>
+
+
