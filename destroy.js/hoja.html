@@ -1,0 +1,323 @@
+<html>
+<head>
+<style>
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+				
+
+   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #ffffff;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  
+  #spacer{
+
+ 
+
+  height:10px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:white  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: white;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  
+  #wrapper {
+
+position: absolute;
+
+
+margin-left: 25%;
+margin-right: 25%;
+
+
+}
+
+#content { 
+  overflow:auto; 
+  width: 1300px; 
+  background: white; 
+} 
+
+#left, #right { 
+  width: 600px; 
+ 
+  padding: 1em; 
+  background: white; 
+} 
+
+#left  { float:left;  }
+#right { float:right; } 
+
+#stage
+{
+ background: white;
+}
+  </style>
+</head>
+<body>
+<script src="jquery.min.js"></script>
+<div id="dashboard">
+
+		Detecting Unhealthy Regions in Leaf Images Pixel by Pixel - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+        
+
+
+		</div>
+		
+		<div id="spacer">
+		</div>
+	
+	
+
+		<div id="content">
+  <div id="left">
+		<b id="myLabel">Drop Image Here (can be slow with big images)</b> 
+		
+				<canvas id="myCanvas">
+			
+				
+				</canvas>
+				</div>		
+				<div id="right">
+				<b id="lai"></b> <button onclick="saveImage()">Save as Image</button>
+					<canvas id="canvas">
+					
+				
+				</canvas>
+			</div>
+			</div>		
+
+		
+			
+
+<script>
+
+
+var _inputImage;
+loadSample();
+
+function loadSample() {
+    document.getElementById('myLabel').innerHTML = "Processing...";
+			
+	_inputImage = new Image();
+	_inputImage.src = ("leaf4.jpg");
+
+	_inputImage.onload = function() {
+	    
+run();
+		
+		document.getElementById('myLabel').innerHTML = "Drop Image Here (can be slow with big images)";
+	
+		//
+	};
+}
+
+
+$(document).ready( function() {
+
+	
+
+	//init image drag and drop
+	if (typeof(FileReader) != "undefined") {
+
+		window.addEventListener('dragover', function(event) {
+			event.preventDefault();
+		}, false);
+		window.addEventListener('drop', function(event) {
+			event.preventDefault();
+
+			var file = event.dataTransfer.files[0];
+			var fileType = file.type;
+			if (!fileType.match(/image\/\w+/)) {
+				alert("Only image files supported.");
+				return;
+			}
+			
+			var reader = new FileReader();
+			document.getElementById('myLabel').innerHTML = "Processing...";
+			
+			reader.onload = function() {
+				
+				_inputImage = new Image();
+				_inputImage.src = reader.result;
+
+				_inputImage.onload = function() {
+					
+					run();
+					
+					
+					document.getElementById('myLabel').innerHTML = "Drop Image Here (can be slow with big images)";
+				};
+			};
+			reader.readAsDataURL(file);
+		}, false);
+	}
+	// stop the user getting a text cursor
+	document.onselectstart = function() {
+		return false;
+	};
+	_stage = document.getElementById("stage");
+
+	
+	
+	//init mouse listeners
+	
+	$(window).mousedown( function() {
+		_enableMouseMove = true;
+	});
+	$(window).mouseup( function() {
+		_enableMouseMove = false;
+	});
+	
+	});
+	
+	
+
+
+function run() {
+/*
+Implements the algorithm described in
+
+SCANNING LEAVES ALGORITHM BASED IN “RGB PIXEL BY PIXEL” METHOD
+by Pérez Rodríguez F., Camino Saco A., Mendes Lopes D.M., Rojo Alboreca A., Gómez García E. 
+Proceedings of V European Congress of Methodology July 17-20, 2012 
+
+*/
+			
+			_imageWidth = _inputImage.width;
+			_imageHeight = _inputImage.height;
+			canvas = document.getElementById("myCanvas");
+			canvas.width = 800;//_imageWidth
+			canvas.height = 800;//_imageHeight;
+			context = canvas.getContext('2d');
+			context.drawImage(_inputImage, 0, 0);
+		  
+			
+			j = canvas.width;
+            i = canvas.height;
+			r = context.getImageData(0, 0, canvas.width, canvas.height);
+			
+			f =  document.getElementById("canvas");
+			f.width=canvas.width;
+			f.height=canvas.height;
+			
+            h = f.getContext("2d");
+			imageData = h.createImageData(canvas.width, canvas.height);
+			area=0
+            for (l = 0; l < (canvas.width* canvas.height); l++) {
+				b = l * 4;
+                e = {
+                        r: r.data[b],
+                        g: r.data[b + 1],
+                        b: r.data[b+ 2],
+						a: r.data[b+ 3]
+                        
+                    }
+				pa = 1.020;
+				pb = 1.000;
+				pc = 0.800;
+				pd = 1.070;
+				pe = 0.150;
+				
+				if ((e.g > (pa * e.r)) && (e.g > (pb * e.b))) 
+				{
+					if (e.r > (pc * e.g))
+					{
+						imageData.data[b]=255;
+						imageData.data[b+1]=255;
+						imageData.data[b+2]=0;
+						imageData.data[b+3]=255;
+					    area=area+1;
+					}
+					else
+					{
+						imageData.data[b]=0;
+						imageData.data[b+1]=0;
+						imageData.data[b+2]=255;
+						imageData.data[b+3]=255;
+						area=area+1;
+					}
+				
+				}
+				else
+				{
+				
+					if ((e.r > (pd * e.g)) && (e.r > (pe * e.b)))
+					{
+						imageData.data[b]=255;
+						imageData.data[b+1]=0;
+						imageData.data[b+2]=0;
+						imageData.data[b+3]=255;
+						area=area+1;
+					}
+					else 
+					{
+					 
+						imageData.data[b]=255;
+						imageData.data[b+1]=255;
+						imageData.data[b+2]=255;
+						imageData.data[b+3]=255;
+					 }
+				
+				}
+				/*imageData.data[b]=e.b;
+				imageData.data[b+1]=e.g;
+				imageData.data[b+2]=e.r;
+				imageData.data[b+3]=e.a;*/
+              }
+			
+			  h.putImageData(imageData,0,0);
+			  document.getElementById('myLabel').innerHTML = "Drop Image Here (can be slow with big images)";
+			  document.getElementById('lai').innerHTML = "Leaf Area: " + area + " pixels";
+			}
+			
+function saveImage()
+{
+  var canvas1 = document.getElementById("canvas");        
+  if (canvas1.getContext) {
+     var ctx = canvas1.getContext("2d");                
+     var myImage = canvas1.toDataURL("image/png");      
+  }
+ 
+ window.location = myImage;                         
+
+}  
+</script>
+</body>
+</html>
+
+

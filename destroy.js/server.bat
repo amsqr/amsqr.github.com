@@ -1,1 +1,1 @@
-python -m SimpleHTTPServer
+c:\python26\python -m SimpleHTTPServer
