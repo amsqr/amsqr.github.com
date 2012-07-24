@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+		<title>WEBGL DEMO www.amsqr.com</title>
+		<meta charset="utf-8">
+		<style type="text/css">
+			
+			body {
+				background:#000;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+			   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#ffffff  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: "white";
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  
+  }
+  
+  
+  
+  #effect {
+     width: 600px;
+    
+     margin: 10px auto;
+
+   }
+
+		</style>
+
+
+<body>
+
+<div id="dashboard">
+
+		Using OpenGL inmediate mode in WebGL - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+
+
+
+		</div>
+<div id="effect"></div>
+<div id="info"></div>
+  <script src="lightgl.js"></script>
+  <script>
+
+  
+var angle = 0;
+var gl = GL.create();
+ 
+function cube()
+{
+gl.pushMatrix();
+gl.scale(0.5,0.5,0.5);
+  gl.begin(gl.TRIANGLES);
+         
+ gl.color(1,0,0)
+gl.vertex(0,0,0.5)
+gl.vertex(0,-1,0)
+gl.vertex(0.75,-0.75,0)
+ 
+ gl.color(0,1,0)
+gl.vertex(0,0,0.5)
+gl.vertex(0.75,-0.75,0)
+gl.vertex(1,0,0)
+ 
+ gl.color(1,0,0)
+gl.vertex(0,0,0.5)
+gl.vertex(1,0,0)
+gl.vertex(0.75,0.75,0)
+ 
+        gl.end();
+		gl.popMatrix();
+}
+
+function pincho(num,up)
+{
+size=1;
+gl.pushMatrix();
+num=num/4;
+for (segment=1;segment<num;segment++)
+  {
+   
+	myangle =10;
+	size=size-0.01;
+	
+	if (up == 0) gl.rotate(Math.floor(myangle*Math.sin(angle/8))/2, 1.0, 0.0, 0.0);
+    if (up == 1)  gl.rotate(Math.floor(myangle*Math.sin(angle/8))/2, 0.0, 1.0, 0.0);
+    if (up == 2)  gl.rotate(Math.floor(myangle*Math.sin(angle/8))/2, 0.0, 0.0, 1.0);
+	if (up == 0) gl.rotate(Math.floor(myangle*Math.cos(angle/8))/2, 0.0, 1.0, 0.0);
+    if (up == 2)  gl.rotate(Math.floor(myangle*Math.cos(angle/8))/2, 0.0, 1.0, 0.0);
+    if (up == 1)  gl.rotate(Math.floor(myangle*Math.cos(angle/8))/2, 0.0, 0.0, 1.0);
+     gl.scale(size,size,size);
+
+    cube();
+	gl.translate(0.0, 0.0, Math.sin(angle/100)-0.5);
+	
+  }		
+gl.popMatrix();
+
+}
+function espinete()
+{
+
+ gl.pushMatrix();
+	 
+	 pincho(100,0);
+	 gl.rotate(90,0,1,0);
+     pincho(100,1);
+     gl.rotate(90,0,1,0);
+     pincho(100,2);
+	 gl.rotate(90,0,1,0);
+     pincho(100,0);
+	 gl.rotate(90,0,0,1);
+     pincho(100,1);
+	 gl.rotate(180,1,0,0);
+     pincho(100,2);
+     gl.popMatrix();
+	 
+     
+	 
+	  gl.pushMatrix();
+	 gl.rotate(90,1,0,0);
+	
+	 pincho(100,0);
+	 gl.rotate(90,0,1,0);
+     pincho(100,1);
+     gl.rotate(90,0,1,0);
+     pincho(100,2);
+	 gl.rotate(90,0,1,0);
+     pincho(100,0);
+	 gl.rotate(90,0,0,1);
+     pincho(100,1);
+	 gl.rotate(180,1,0,0);
+     pincho(100,2);
+     gl.popMatrix();
+	
+
+}
+gl.onupdate = function(seconds) {
+  angle += 25 * seconds;
+};
+
+gl.ondraw = function() {
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.loadIdentity();
+  gl.translate(0, 0, -5);
+ 
+  gl.rotate(30, 1, 0, 0);
+  
+
+  gl.color(0.5, 0.5, 0.5);
+  gl.lineWidth(1);
+  gl.begin(gl.LINES);
+  for (var i = -10; i <= 10; i++) {
+    gl.vertex(i, 0, -10);
+    gl.vertex(i, 0, +10);
+    gl.vertex(-10, 0, i);
+    gl.vertex(+10, 0, i);
+  }
+  gl.end();
+
+gl.pushMatrix();
+gl.translate(0.0, -3.0, -5);
+gl.rotate(angle*2, 0, 1, 0);
+
+espinete();
+
+gl.popMatrix();
+};
+
+gl.fullscreen();
+ gl.canvas.style.top="60px";
+ 
+   
+   gl.animate();
+  </script>
+</body></html>
