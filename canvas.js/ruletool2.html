@@ -1,0 +1,333 @@
+<html>
+<head>
+ <title>RULETOOL v2: L-systems and turtle graphics demo</title>
+
+ <style> 
+
+
+
+   #dashboard{
+
+  height:45px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+
+  color: #ffffff;
+
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+
+ 
+ 
+</style>
+<script>
+
+/*
+
+ 
+ Copyright (C) 2012 Alejandro Mosquera <amsqr2@gmail.com>
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, version 3 of the License.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+</script>
+</head>
+<body>
+<script>
+
+tuple= function(rul,ang){
+this.rules=rul;
+this.angle=ang;
+}
+examples=new Array();
+
+rules="system.addRule('X','--FXF++FXF++FXF--'); \
+	system.addRule('F','FF'); \
+	axiom = 'FXF--FF--FF';"
+	examples[0]=new tuple(rules,60); 
+
+rules="system.addRule( 'F', 'F+F--F+F' ); \
+      system.addRule( 'B', 'A' ); \
+      axiom = 'F--F--F--F';"
+examples[7]=new tuple(rules,45); //koch
+
+
+rules="system.addRule('A','FFFF[--AE]F[+++AE]FFF'); \
+      system.addRule('B','FFFF'); \
+      system.addRule('C','F[+++CE]F[-AE]F'); \
+      system.addRule('D','FFF'); \
+      system.addRule('E','[---F][--FF][-FFF][+++F][++FF][+FFF]FFF'); \
+      axiom='+A-B-C-D+E';"
+examples[1]=new tuple(rules,10); //tree
+	
+	
+
+rules="system.addRule('X','YF+XF+Y'); \
+	system.addRule('Y','XF-YF-X'); \
+	axiom='X';"
+examples[2]=new tuple(rules,60); //Arrowhead_Curve
+
+rules="system.addRule('X','X+YF+'); \
+	system.addRule('Y','-FX-Y'); \
+	axiom='X';"
+	examples[3]=new tuple(rules,90); //dragon
+	
+	
+rules="system.addRule('X','F-[[X]+X]+F[+FX]-X'); \
+	system.addRule('F','FF'); \
+	axiom='X';"
+	examples[4]=new tuple(rules,25); //plant
+	
+
+rules=  "axiom='W'; \
+	system.addRule('W','+++X--F--ZFX+'); \
+	system.addRule('X','---W++F++YFW-'); \
+	system.addRule('Y','+ZFX--F--Z+++'); \
+	system.addRule('Z','-YFW++F++Y---');"
+	examples[5]=new tuple(rules,30);
+
+rules=	"axiom='F-F-F-F-F'; \
+	system.addRule('F','F-F++F+F-F-F');"
+	examples[6]=new tuple(rules,72);
+
+rules=	"axiom='X'; \
+	system.addRule('X','-YF+XFX+FY-'); \
+	system.addRule('Y','+XF-YFY-FX+');"
+	examples[8]=new tuple(rules,90); //hilbert curve
+	
+rules=	"axiom='FX'; \
+	system.addRule('Y','Y-XF--XF+FY++FYFY+XF-'); \
+	system.addRule('X','+FY-XFXF--XF-FY++FY+X');"
+	examples[9]=new tuple(rules,60); //peano gosper curve
+	
+
+rules=	"axiom='X'; \
+	system.addRule('X','XFYFX-F-YFXFY+F+XFYFX'); \
+	system.addRule('Y','YFXFY+F+XFYFX-F-YFXFY');"
+	examples[10]=new tuple(rules,90); //hilbert2
+	
+function changerules(val)
+{
+out = "system = new LSystem();" + val.rules +  " res=system.iterate( axiom, document.getElementById('iter').value ); \
+	        document.getElementById('out').value=res;" 
+
+document.getElementById("source").value=out;
+document.getElementById("angle").value=val.angle;
+
+}
+</script>
+<div id="dashboard">
+
+
+
+		RULETOOL v2: L-systems and turtle graphics demo - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> 
+
+		</div>
+
+
+<br> </br>
+ 
+
+ <body bgcolor ="grey">
+
+<div  style="float: left;">
+<select id="Find" size="1" onchange="javascript:changerules(examples[this.selectedIndex]);" > 
+<option value="0">Sierpinski</option> 
+<option value="1">Tree</option> 
+<option value="2">Arrowhead_Curve</option> 
+<option value="3">Dragon</option> 
+<option value="4">Plant</option> 
+<option value="5">Unk1</option> 
+<option value="6">Unk2</option> 
+<option value="7">Koch</option> 
+<option value="7">Hilbert</option>
+<option value="7">Peano-Gosper</option>
+<option value="7">Hilbert2</option>
+</select><br> 
+
+<textarea id="source" style="width:400;height:200;background-color: lightgrey;"></textarea> 
+<br></br>
+Angle<input type="text" id="angle" value="60" size="3" />
+Len <input type="text" id="len" value="5" size="3" />
+Iterations <input type="text" id="iter" value="4" size="3" />
+<input type="submit" value="Run" onclick="evalua()"/>
+<br></br>
+<textarea id="out" style="width:400;height:200;background-color: white;"></textarea> 
+  
+
+
+</div>
+<div  style="float: right; width:800">
+<canvas id="canvas" width="700" height="500" style="border:4px solid blue;background-color: white;"></canvas>
+</div>
+
+
+<script>
+
+
+function LSystem()
+{
+this.ruleDictionary =  new Array();
+this.systemBase='';
+}
+
+
+LSystem.prototype.setBase= function  setBase(aBase ) {
+  this.systemBase = aBase;
+  }
+
+LSystem.prototype.addRule= function addRule(aReplace, aWith ){
+    // Add the rule to dictionary
+    this.ruleDictionary[aReplace] = aWith;
+    //alert(this.ruleDictionary[aReplace]);
+    }
+
+
+LSystem.prototype.iterate=function iterate(aBase, aIterations ){
+    rep = "";
+    if (aIterations > 0) 
+    {         
+	     
+	      for (i=0; i<aBase.length;i++)
+	      {
+			
+			k=aBase.charAt(i);
+		        //alert(k);
+			if (k in this.ruleDictionary)
+			{
+			 //alert(k+' esta lo reemplazo por ' + this.ruleDictionary[k])
+			 rep = rep + this.ruleDictionary[k];
+			 //alert('asi queda '+rep);
+			}
+			
+			else
+			{
+			rep = rep + k;
+			}
+			
+	      }
+	      
+	     
+	      return this.iterate( rep, aIterations-1 );
+     }
+    else
+     {	//alert(aBase);
+	return aBase;
+     }
+     
+     
+}
+
+document.getElementById("source").value=" \
+	system = new LSystem(); \
+	system.addRule('X','--FXF++FXF++FXF--'); \
+	system.addRule('F','FF'); \
+	axiom = 'FXF--FF--FF'; \
+	res=system.iterate( axiom,document.getElementById('iter').value); \
+	document.getElementById('out').value=res;"
+	
+function evalua()
+{
+	
+	angle=document.getElementById("angle").value;
+	len=document.getElementById("len").value;
+	eval(document.getElementById("source").value);
+	res=document.getElementById("out").value;
+	if (res!="") drawstuff(angle,len);
+}
+
+function drawstuff(angle,len)
+{
+	res=document.getElementById("out").value;
+	
+	var ref = document.getElementById('canvas');
+	var ctx = ref.getContext('2d');
+	//var txt = document.getElementById(t);
+	//var src = txt.value;
+
+	ctx.save();
+	ctx.clearRect(0,0,ref.width,ref.height);
+	ctx.translate(ref.width/2,ref.height/2);
+	ctx.beginPath();	// start track display
+	ctx.moveTo(0,0);
+
+	ctx.penState = 1;
+	ctx.displace = function() { ctx.penState ? ctx.lineTo(0,0)
+						    : ctx.moveTo(0,0) }		
+	for (i=0; i<res.length;i++)
+	{
+		k=res.charAt(i);
+		switch(k)  {
+		case '+': //turn right
+			ctx.rotate(angle*3.1415926/180);
+			break
+		case '-': //turn left
+			ctx.rotate(-angle*3.1415926/180);
+			break
+		case 'F': //forward
+			ctx.translate(len,0);
+			ctx.displace();
+			break;
+		case 'M': //mirror
+			ctx.scale(1,-1);
+			break;
+		case 'R': //reverse
+			ctx.scale(-1,1);
+			break;
+		case 'S': //scale
+			ctx.lineWidth/= len;
+			ctx.scale(len,len);
+			break;	
+		case '[':
+			ctx.save();
+			break;
+		case ']':
+			ctx.restore();
+			break;
+		case '^': //3d z left
+			break;
+		case '&': //3d z right http://cvdmark.home.xs4all.nl/tutor.html
+				// http://www.nbb.cornell.edu/neurobio/land/OldStudentProjects/cs490-94to95/hwchen/
+			break;
+		case 'c': //color
+			break;
+		
+		}
+
+		
+	}
+	ctx.stroke();	
+	ctx.beginPath();
+	ctx.moveTo(0,-5);
+	ctx.lineTo(20,0);
+	ctx.lineTo(0, 5);
+	ctx.closePath();
+	ctx.fill();
+	ctx.restore();
+
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<html>
+<head>
+<style>
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+				
+
+   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #ffffff;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  
+  #spacer{
+
+ 
+
+  height:10px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:white  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: white;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  
+  #wrapper {
+
+position: absolute;
+
+
+margin-left: 25%;
+margin-right: 25%;
+
+
+}
+
+#content { 
+  overflow:auto; 
+  width: 1300px; 
+  background: white; 
+} 
+
+#left { 
+  width: 300px; 
+ 
+  padding: 1em; 
+  background: white; 
+} 
+#right { 
+  width: 1000px; 
+ 
+  padding: 1em; 
+  background: white; 
+} 
+
+#left  { float:left;  }
+#right { float:right; } 
+
+#stage
+{
+ background: white;
+}
+  </style>
+</head>
+<body>
+
+<div id="dashboard">
+
+		Burning Ship Fractal - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+        
+
+
+		</div>
+		
+		<div id="spacer">
+		</div>
+	
+	
+
+		<div id="content">
+  <div id="left">
+  
+  Ecuations taken from <a href="http://paulbourke.net/fractals/burnship/">Paul Bourke</a> website:
+  <img src="burnship6.gif" />
+		
+				</div>		
+				<div id="right">
+				 <button onclick="saveImage()">Save as Image</button>
+					<canvas id="canvas" width="1000" height="400">
+					
+				
+				</canvas>
+			</div>
+			</div>		
+
+		
+			
+
+<script>
+
+
+			
+			
+var canvas = document.getElementById('canvas');
+var context = canvas.getContext('2d');
+N=context.canvas.width;
+M=context.canvas.height;
+var imgd = context.createImageData(N,N);
+var pix = imgd.data;
+
+var iteratemax = 256;
+
+var cx = 0.0;
+var cy = 0.0;
+var p0x = 0.0;
+var px = 0.0;
+var p0y = 0.0;
+
+midpointx=1.755;
+midpointy=0.03;
+range=0.04;
+
+
+for (var i = 0; i < N; i++)
+{
+    
+    for(var j = 0; j < M; j++)
+    {
+       cx = midpointx + 2 * range * (i / N - 0.5);
+       cy = midpointy + 2 * range * (j / M - 0.5);
+       
+        p0x = cx;
+        p0y = cy;
+        for(var k = 0; k < iteratemax; k++)
+        {
+            
+            px = p0x * p0x - p0y * p0y - cx;
+            p0y = 2.0 * Math.abs(p0x * p0y) - cy;
+            p0x = px;
+	    if( p0x * p0x + p0y * p0y > 10.0) break;
+        }
+        var p = (N * j + i) * 4;
+        pix[p] = k % 8 * 32;    // red
+        pix[p+1] = k % 16 * 16; // green
+        pix[p+2] = k % 32 * 8;  // blue
+        pix[p+3] = 255;         // alpha
+    }
+}
+
+context.putImageData(imgd, 0,0); 
+var ctx2 = document.getElementById("canvas").getContext("2d");
+ctx2.rotate(Math.PI);
+ctx2.translate(-N,-M);
+ctx2.drawImage(canvas, 0,0);
+	
+			 
+			
+			
+function saveImage()
+{
+  var canvas1 = document.getElementById("canvas");        
+  if (canvas1.getContext) {
+     var ctx = canvas1.getContext("2d");                
+     var myImage = canvas1.toDataURL("image/png");      
+  }
+ 
+ window.location = myImage;                         
+
+}  
+</script>
+</body>
+</html>
+
+
