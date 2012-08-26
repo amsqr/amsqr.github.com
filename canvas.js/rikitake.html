@@ -1,0 +1,131 @@
+<html>
+<head>
+
+<style>
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+				
+
+   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #ffffff;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  
+  #spacer{
+
+ 
+
+  height:10px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:white  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: white;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+ </style>
+</head>
+<body>
+<div id="dashboard">
+
+		Rikitake Attractor - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+        
+
+
+		</div>
+		
+		<div id="spacer">
+		</div>
+      <canvas id="canvas1" width="640", height="480"></canvas>
+
+<script type="text/javascript">
+
+var element = document.getElementById("canvas1");
+var c = element.getContext("2d");
+var width = element.width;
+var height = element.height;
+var imageData = c.createImageData(width, height);
+ // read the width and height of the canvas
+
+timer = setInterval(draw, 0);
+
+ function draw()
+ {
+        a = 2;
+        s = 10;
+        u = 2.1;
+        x = 0.1;
+        y = 0;
+        z = 0;
+        xn = x;
+        yn = y;
+        zn = z;
+        dt = 0.008;
+		
+    a=Math.random(10);
+	s=Math.random(20);
+	u=Math.random(5);
+	dt = Math.random(1)/100;
+	
+	imageData = c.createImageData(width, height);
+	
+	for (i=0;i<50000;i++)
+	{
+	   xn = -u*x+s*y*z;
+       yn = -u*y+(s*z-a)*x;
+       zn = 1-s*x*y;
+       x = x+xn*dt;
+       y = y+yn*dt;
+       z = z+zn*dt;
+       putpixel(Math.floor(200+(100*x)), Math.floor(150+(80*y)));
+	   
+	}
+	// copy the image data back onto the canvas
+	//alert(imageData.data);
+	c.putImageData(imageData, 0, 0); // at coords 0,0
+}
+
+function putpixel(x, y) {
+
+    index = (x + y * imageData.width) * 4;
+    imageData.data[index+0] = 255;
+    imageData.data[index+1] = 0;
+    imageData.data[index+2] = 0;
+    imageData.data[index+3] = 255;
+}
+
+</script>
+</body>
+</html>

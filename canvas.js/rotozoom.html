@@ -1,0 +1,202 @@
+<html>
+<head>
+<style>
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+				
+
+   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #ffffff;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  
+  #spacer{
+
+ 
+
+  height:10px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:white  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: white;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  
+  #wrapper {
+
+position: absolute;
+
+
+margin-left: 25%;
+margin-right: 25%;
+
+
+}
+
+#content { 
+  overflow:auto; 
+  width: 1300px; 
+  background: white; 
+} 
+
+#left { 
+  width: 300px; 
+ 
+  padding: 1em; 
+  background: white; 
+} 
+#right { 
+  width: 1000px; 
+ 
+  padding: 1em; 
+  background: white; 
+} 
+
+#left  { float:left;  }
+#right { float:right; } 
+
+#stage
+{
+ background: white;
+}
+  </style>
+</head>
+<body>
+
+<div id="dashboard">
+
+		Fake Roto-zoomer - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+        
+
+
+		</div>
+		
+		<div id="spacer">
+		</div>
+	
+	
+
+		<div id="content">
+  <div id="left">
+  
+  
+		
+				</div>		
+				<div id="right">
+				
+					<canvas id="canvas" width="300" height="300">
+					
+				
+				</canvas>
+			</div>
+			</div>		
+
+		
+<script LANGUAGE="JavaScript">
+
+
+ var pic1 = new Image();
+ pic1.src="photo.jpg";
+ var sipx=2;
+ var sipy=2;
+ var angle=0.5;
+ var elapsed=0;
+ var canvas=document.getElementById('canvas');
+ var ctx = canvas.getContext('2d');
+ 
+setInterval(getTick, 100);
+setInterval(draw, 20);
+
+
+function draw() {
+
+  
+  ctx.lineWidth = 1;
+  ctx.save(); 
+ 
+  
+if (elapsed==0 || elapsed==100) { 
+       elapsed=0;
+	   
+    width=canvas.width;
+    height=canvas.height;
+
+	ctx.drawImage(pic1, 0, 0,300,300);
+	  
+	  sipx=Math.random()*1;
+	  sipy=Math.random()*1;
+	  angle=angle*-1;
+
+}
+ if (elapsed<50){
+  ctx.restore(); 
+
+  ctx.save();
+  
+  ctx.scale(1.005, 1.005);
+   ctx.translate(Math.random(5), Math.random(5));
+  ctx.rotate(Math.random(1)/200*angle);
+ 
+  ctx.drawImage(ctx.canvas, -sipx,-sipy);
+  ctx.restore();
+}
+
+if (elapsed==50){
+ctx.drawImage(pic1, 0, 0,300,300);
+}
+
+if (elapsed>50){
+
+  ctx.restore(); 
+
+  ctx.save();
+  ctx.rotate(-Math.random(1)/100*angle);
+  ctx.scale(0.99, 0.99);
+  ctx.translate(Math.random(5), Math.random(5));
+  ctx.drawImage(ctx.canvas, -sipx,-sipy);
+  ctx.restore();
+}
+
+
+}
+
+function getTick()
+{
+elapsed=elapsed+1;
+}
+</script>
+</body>
+</html>

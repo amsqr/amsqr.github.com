@@ -1,0 +1,264 @@
+<html>
+<head>
+<style>
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+				
+
+   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #ffffff;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  
+  #spacer{
+
+ 
+
+  height:10px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:white  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: white;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  
+  #wrapper {
+
+position: absolute;
+
+
+margin-left: 25%;
+margin-right: 25%;
+
+
+}
+
+#content { 
+  overflow:auto; 
+  width: 1300px; 
+  background: white; 
+} 
+
+#left { 
+  width: 300px; 
+ 
+  padding: 1em; 
+  background: white; 
+} 
+#right { 
+  width: 1000px; 
+ 
+  padding: 1em; 
+  background: white; 
+} 
+
+#left  { float:left;  }
+#right { float:right; } 
+
+#stage
+{
+ background: white;
+}
+  </style>
+</head>
+<body>
+
+<div id="dashboard">
+
+		Buddhabrot Fractal - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+        
+
+
+		</div>
+		
+		<div id="spacer">
+		</div>
+	
+	
+
+		<div id="content">
+  <div id="left">
+  
+  Original algorithm taken from <a href="http://jashkenas.s3.amazonaws.com/misc/buddhabrot/docs/buddhabrot.html">jashkenas</a> website
+  
+		
+				</div>		
+				<div id="right">
+				 <button onclick="saveImage()">Save as Image</button>
+					<canvas id="canvas" width="400" height="400">
+					
+				
+				</canvas>
+			</div>
+			</div>		
+
+		
+			
+
+<script>
+			
+var N, canvas, context, draw, drawing, exposures, findMaxExposure, i, image, iterate, iterations, limit, maxexposure, plot, points, render, time, timer;
+
+iterations = 500;
+
+points = 100000;
+
+limit = 50;
+
+canvas = document.getElementById('canvas');
+
+context = canvas.getContext('2d');
+
+N = canvas.width;
+
+image = context.createImageData(N, N);
+
+exposures = (function() {
+  var _i, _ref, _results;
+  _results = [];
+  for (i = _i = 0, _ref = N * N; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+    _results.push(0);
+  }
+  return _results;
+})();
+
+maxexposure = 0;
+
+time = 0;
+
+drawing = false;
+
+timer = null;
+
+draw = function() {
+  if (time > limit) {
+    clearInterval(timer);
+  }
+  time += 1;
+  plot();
+  findMaxExposure();
+  return render();
+};
+
+plot = function() {
+  var n, x, y, _i;
+  for (n = _i = 0; 0 <= points ? _i < points : _i > points; n = 0 <= points ? ++_i : --_i) {
+    x = Math.random() * 3 - 2;
+    y = Math.random() * 3 - 1.5;
+    if (iterate(x, y, false)) {
+      iterate(x, y, true);
+    }
+  }
+  return null;
+};
+
+iterate = function(x0, y0, shouldDraw) {
+  var drawnX, drawnY, x, xnew, y, ynew, _i;
+  x = y = 0;
+  for (i = _i = 0; 0 <= iterations ? _i < iterations : _i > iterations; i = 0 <= iterations ? ++_i : --_i) {
+    xnew = x * x - y * y + x0;
+    ynew = 2 * x * y + y0;
+    if (shouldDraw && i > 3) {
+      drawnX = Math.round(N * (xnew + 2.0) / 3.0);
+      drawnY = Math.round(N * (ynew + 1.5) / 3.0);
+      if (((0 <= drawnX && drawnX < N)) && ((0 <= drawnY && drawnY < N))) {
+        exposures[drawnX * N + drawnY] += 1;
+      }
+    }
+    if ((xnew * xnew + ynew * ynew) > 4) {
+      return true;
+    }
+    x = xnew;
+    y = ynew;
+  }
+  return false;
+};
+
+render = function() {
+  var data, idx, j, ramp, _i, _j;
+  data = image.data;
+  for (i = _i = 0; 0 <= N ? _i < N : _i > N; i = 0 <= N ? ++_i : --_i) {
+    for (j = _j = 0; 0 <= N ? _j < N : _j > N; j = 0 <= N ? ++_j : --_j) {
+      ramp = exposures[i * N + j] / (maxexposure / 2.5);
+      if (ramp > 1) {
+        ramp = 1;
+      }
+      idx = (i * N + j) * 4;
+      //data[idx] = ramp * 255;
+	  //data[idx + 1] = ramp * 255;
+	  //data[idx + 2] = ramp * 255;
+      //data[idx + 3] = 255;
+	  
+	  data[idx] = ramp % 8 * 32*20;
+	  data[idx + 1] = ramp % 16 * 16*20;
+	  data[idx + 2] = ramp % 32 * 8*20;
+      data[idx + 3] = 255;
+	  
+    }
+  }
+  return context.putImageData(image, 0, 0);
+};
+
+findMaxExposure = function() {
+  var value, _i, _len, _results;
+  _results = [];
+  for (_i = 0, _len = exposures.length; _i < _len; _i++) {
+    value = exposures[_i];
+    if (value > maxexposure) {
+      _results.push(maxexposure = value);
+    }
+  }
+  return _results;
+};
+
+timer = setInterval(draw, 0);
+
+function saveImage()
+{
+  var canvas1 = document.getElementById("canvas");        
+  if (canvas1.getContext) {
+     var ctx = canvas1.getContext("2d");                
+     var myImage = canvas1.toDataURL("image/png");      
+  }
+ 
+ window.location = myImage;                         
+
+}  
+</script>
+</body>
+</html>
+
+
