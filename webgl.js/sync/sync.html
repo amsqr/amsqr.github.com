@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>www.amsqr.com</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background:#000;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+	#stuff{
+	 height:1px;
+	
+    width:100%;
+   
+}	
+
+   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#FFFFFF  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #000000;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+
+  
+
+
+		</style>
+	</head>
+	<body>
+<div id="dashboard">
+
+		Beat Detection and Real-time Audio Analysis Demo - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+
+
+
+		</div>
+		<div id="stuff">
+		</div>
+	<script src="Three.js"></script>
+		<script src="Stats.js"></script>
+		<script src="DAT.GUI.min.js"></script>
+		<script src="ShaderExtras.js"></script>
+		<script src="EffectComposer.js"></script>
+		<script src="RenderPass.js"></script>
+		<script src="ShaderPass.js"></script>
+		<script src="MaskPass.js"></script>
+		<script src="BloomPass.js"></script>
+		<script src="FilmPass.js"></script>
+
+		<script type="x-shader/x-vertex" id="vertexshader">
+
+				attribute float size;
+				attribute vec3 pcolor;
+
+				varying vec3 vColor;
+
+				void main() {
+
+					vColor = pcolor;
+
+					vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+
+					gl_PointSize = size * ( 200.0 / length( mvPosition.xyz ) );
+
+					gl_Position = projectionMatrix * mvPosition;
+
+				}
+
+			</script>
+
+			<script type="x-shader/x-fragment" id="fragmentshader">
+
+				uniform sampler2D texture;
+
+				varying vec3 vColor;
+
+				void main() {
+
+					vec4 outColor = texture2D( texture, gl_PointCoord );
+
+					gl_FragColor = outColor * vec4( vColor, 1.0 );
+
+				}
+
+			</script>
+
+			
+		
+<script src="beatdetektor.js"></script>
+		<script>
+
+
+var EffectController = function() {
+				this.scaler= 2;
+				 this.a= 2
+				 this.s= 10;
+				 this.u =2.1;
+				 this.dt=0.008;
+				 this.color=0xFF6600;
+				 this.size=0.1;
+				
+			};
+
+           var effectController =  new EffectController();
+
+  var syncstuff = new Array();
+  var kick=0;
+  var postprocme=0;
+  
+function Sound() {
+  const MIX_TO_MONO = false;
+  const NUM_SAMPLES = 2048;
+  
+  
+  var self_ = this;
+  var context_ = new (window.AudioContext || window.webkitAudioContext)();
+  var source_ = null;
+  var jsProcessor_ = null;
+  var analyser_ = null;
+  var viewTimeDomain_ = false;
+
+  var viewportOffset_ = 50;
+
+  var ftimer = 0;
+  var bd = new BeatDetektor();
+  var vu = new BeatDetektor.modules.vis.VU();
+  var kick_det = new BeatDetektor.modules.vis.BassKick();
+  var portion = 0;
+
+  
+	   
+  var processAudio_ = function(e) {
+
+    // Get left channel input. No need for output arrays. They're hooked up
+    // directly to the destination, and we're not doing any processing.
+    var inputArrayL = e.inputBuffer.getChannelData(0);
+
+    var freqByteData = new Uint8Array(analyser_.frequencyBinCount);
+
+    if (viewTimeDomain_) {
+      analyser_.getByteTimeDomainData(freqByteData);
+    } else {
+      analyser_.getByteFrequencyData(freqByteData);
+      //analyser_.fftSize = 2048;
+    }
+    
+     bd.process(context_.currentTime, inputArrayL);
+      ftimer += bd.last_update;
+      if (ftimer > 1.0 / 24.0) {
+        vu.process(bd, ftimer);
+		kick_det.process(bd, ftimer);
+		if (kick_det.isKick())
+		{
+		kick=1;
+		if (effectController.scaler<4) effectController.scaler=effectController.scaler+0.5;
+		}
+		else
+		{
+		kick=0;
+		if (effectController.scaler>1) effectController.scaler=effectController.scaler-0.5;
+		}
+		
+        ftimer = 0;
+      }
+
+      if (vu.vu_levels.length) {
+        var z = vu.vu_levels[0];
+		//document.write(z);
+        }
+		
+
+    self_.render(freqByteData);
+
+  };
+
+  this.render = function(freqByteData) {
+  
+  
+      /*freqByteData = freqByteData.subarray(200);
+      
+      for (var i = 0; i <11 ; ++i)
+	  {
+	    document.getElementById("bass"+i).innerText="";
+		
+		cc=  (1.1*freqByteData[10+i*20]);
+		numspikes=Math.floor(Math.floor(cc)/5);
+		for (var k=0;k<numspikes;++k)
+		{
+			document.getElementById("bass"+i).innerText=document.getElementById("bass"+i).innerText + "*";
+		}
+	  
+	  }
+      */
+	  
+	    var n = freqByteData.length;
+	  var level_range = n/16;
+	  for(var i = 1; i<=8; i++){
+	    //document.getElementById("bass"+i).innerText="";
+	    var magnitude = 0;
+	    for(var j = 0; j< level_range; j++) {
+	      magnitude = magnitude +freqByteData[level_range*(i-1)+j];
+	    }
+	    
+	    var height = Math.floor(parseInt(magnitude)/1500);
+		for (var k=0;k<height;++k)
+		{
+		//document.getElementById("bass"+i).innerText=document.getElementById("bass"+i).innerText + "*";
+		}
+	      syncstuff[i]=height;
+	      
+	  }
+	  if (syncstuff[7]==0) effectController.color=0xFF6600;
+	  if (syncstuff[7]==1) effectController.color=0x009933;
+	  if (syncstuff[7]==2) effectController.color=0x33FF66;
+	  if (syncstuff[7]==3) effectController.color=0x660099;
+	  if (syncstuff[7]>4) effectController.color=0x9933FF;
+	  
+	  if (syncstuff[6]==0) effectController.u=0.1;
+	  if (syncstuff[6]==1) effectController.u=1;
+	  if (syncstuff[6]==2) effectController.u=2;
+	  if (syncstuff[6]==3) effectController.u=5;
+	  if (syncstuff[6]>4) effectController.u=10;
+	  
+	  
+	  if (syncstuff[5]==0) effectController.dt=0.0001;
+	  if (syncstuff[5]==1) effectController.dt=0.0005;
+	  if (syncstuff[5]==2) effectController.dt=0.001;
+	  if (syncstuff[5]==3) effectController.dt=0.005;
+	  if (syncstuff[5]>4) effectController.dt=0.01;
+	  
+	  
+	  if (syncstuff[4]==0) effectController.scale=1;
+	  if (syncstuff[4]==1) effectController.scale=1.2;
+	  if (syncstuff[4]==2) effectController.scale=1.4;
+	  if (syncstuff[4]==3) effectController.scale=1.6;
+	  if (syncstuff[4]>4) effectController.scale=1.8;
+	  
+	  
+	  
+	  if (syncstuff[3]<5) effectController.size=0.025;
+	  if (syncstuff[3]==5) effectController.size=0.05;
+	  if (syncstuff[3]==6) effectController.size=0.1;
+	  if (syncstuff[3]==7) effectController.size=0.2;
+	  if (syncstuff[3]==8) effectController.size=0.4;
+	  if (syncstuff[3]>8) effectController.size=0.8;
+	  
+	   if (syncstuff[1]==6) effectController.a=0.25;
+	  if (syncstuff[1]==7) effectController.a=2;
+	  if (syncstuff[1]==8) effectController.a=4;
+	  if (syncstuff[1]>8) effectController.a=10;
+	  
+	  if (syncstuff[2]==6) effectController.s=8;
+	  if (syncstuff[2]==7) effectController.s=10;
+	  if (syncstuff[2]==8) effectController.s=16;
+	  if (syncstuff[2]>8) effectController.s=32;
+	  
+	    if (syncstuff[1]>8) 
+	    {
+	    postprocme=1;
+	    }
+	    else
+	    {
+	    postprocme=0;
+	    }
+      	//document.getElementById("numbers").innerText=syncstuff;
+
+  };
+
+this.initAudio = function(arrayBuffer) {
+    
+
+    source_ = context_.createBufferSource();
+    source_.looping = true;
+
+    // Use async decoder if it is available.
+    if (context_.decodeAudioData) {
+      context_.decodeAudioData(arrayBuffer, function(buffer) {
+        source_.buffer = buffer;
+      }, function(e) {
+        console.log(e);
+      });
+      
+   } else {
+     source_.buffer = context_.createBuffer(arrayBuffer, MIX_TO_MONO /*mixToMono*/); 
+   } 
+   
+       // This AudioNode will do the amplitude modulation effect directly in JavaScript
+    jsProcessor_ = context_.createJavaScriptNode(NUM_SAMPLES /*bufferSize*/, 1 /*num inputs*/, 1 /*num outputs*/);
+    jsProcessor_.onaudioprocess = processAudio_;
+
+    analyser_ = context_.createAnalyser();
+
+    source_.connect(context_.destination);
+
+
+  };
+
+  this.load = function(url) {
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.responseType = 'arraybuffer';
+    request.onload = function(e) {
+      self_.initAudio(request.response);
+	  self_.play();
+    };
+    request.send();
+	
+  };
+
+  this.play = function() {
+    if (!source_) {
+      sound.load('pianoman.mp3');
+    } else {
+      source_.connect(context_.destination);
+      source_.connect(analyser_);
+
+      analyser_.connect(jsProcessor_);
+      jsProcessor_.connect(context_.destination);
+
+      source_.noteOn(0);
+    }
+  };
+
+  this.pause = function() {
+    //source_.noteOff(0);
+    source_.disconnect(0);
+    jsProcessor_.disconnect(0);
+    analyser_.disconnect(0);
+
+  };
+}
+
+var sound = new Sound();
+sound.load('pianoman.mp3');
+
+			var container, stats;
+
+			var camera, scene, renderer;
+
+			var geometry, root;
+
+			var mouseX = 0, mouseY = 0;
+			
+			
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				scene = new THREE.Scene();
+				
+				//scene.fog = new THREE.FogExp2( 0x000104, 0.0000675 );
+
+				
+				camera = new THREE.PerspectiveCamera( 20,             // Field of view
+                                             window.innerWidth / window.innerHeight,      // Aspect ratio
+                                            1,            // Near plane
+                                            3000           // Far plane );
+											);
+				//camera.position.z = 10;
+				
+				camera.position.set( 1, 1, 10 );
+                camera.lookAt( scene.position );
+			    //camera.position.z = 2;
+				scene.add( camera );
+				
+
+	  
+				
+			
+				var particles=drawRikitake(effectController.scaler,effectController.a,effectController.s,effectController.u,effectController.dt);
+				scene.add( particles );
+				
+				
+				
+				var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+				directionalLight.position.set( 0, -1, 1 );
+				directionalLight.position.normalize();
+				if (postprocme==1) scene.add( directionalLight );
+
+				
+				var light = new THREE.PointLight( 0xFFFF00 );
+				light.position.set( 10, 0, 10 );
+				scene.add( light );
+
+				renderer = new THREE.WebGLRenderer();
+				
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.sortObjects = false;
+				container.appendChild( renderer.domElement );
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				stats.domElement.style.zIndex = 100;
+				container.appendChild( stats.domElement );
+				
+				var matChanger = function( ) {
+				
+				
+				};
+
+				
+				
+				// POST PROCESSING
+
+				var effectFocus = new THREE.ShaderPass( THREE.ShaderExtras[ "focus" ] );
+
+				var effectScreen = new THREE.ShaderPass( THREE.ShaderExtras[ "screen" ] );
+				effectFilm = new THREE.FilmPass( 0.5, 0.25, 2048, false );
+
+				var shaderBlur = THREE.ShaderExtras[ "triangleBlur" ];
+				var effectBlurX = new THREE.ShaderPass( shaderBlur, 'texture' );
+				var effectBlurY = new THREE.ShaderPass( shaderBlur, 'texture' );
+				//var effectBloom = new THREE.BloomPass( 0.75 );
+				var effectBloom = new THREE.BloomPass( 5, 25, 4 , 256);
+				
+				var radius = 15;
+				var blurAmountX = radius / window.innerWidth;
+				var blurAmountY = radius / window.innerHeight;
+
+				var hblur = new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalBlur" ] );
+				var vblur = new THREE.ShaderPass( THREE.ShaderExtras[ "verticalBlur" ] );
+
+				hblur.uniforms[ 'h' ].value =  1 / window.innerWidth;
+				vblur.uniforms[ 'v' ].value =  1 / window.innerHeight;
+
+				effectBlurX.uniforms[ 'delta' ].value = new THREE.Vector2( blurAmountX, 0 );
+				effectBlurY.uniforms[ 'delta' ].value = new THREE.Vector2( 0, blurAmountY );
+
+				effectFocus.uniforms[ 'sampleDistance' ].value = 0.99; //0.94
+				effectFocus.uniforms[ 'waveFactor' ].value = 0.003;  //0.00125
+
+				var renderScene = new THREE.RenderPass( scene, camera );
+
+				composer = new THREE.EffectComposer( renderer );
+				composer.addPass( renderScene );
+				composer.addPass( effectBloom );
+				//composer.addPass( effectFilm );
+				//composer.addPass( hblur );
+				//composer.addPass( vblur );
+				//composer.addPass( effectBlurX );
+				//composer.addPass( effectBlurY );
+				composer.addPass( effectScreen );
+				//composer.addPass( effectFocus );
+
+				vblur.renderToScreen = true;
+				effectBlurY.renderToScreen = true;
+				effectFocus.renderToScreen = true;
+				effectScreen.renderToScreen = true;
+				//effectFilm.renderToScreen = true;
+				
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				
+				document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+				document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+
+
+			}
+
+			function onDocumentMouseMove(event) {
+
+				mouseX = ( event.clientX - windowHalfX ) ;
+				mouseY = ( event.clientY - windowHalfY ) ;
+
+			}
+
+			
+			function onDocumentTouchStart( event ) {
+
+				if ( event.touches.length == 1 ) {
+
+					event.preventDefault();
+
+					mouseX = event.touches[ 0 ].pageX - windowHalfX;
+					mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+				}
+			}
+
+			function onDocumentTouchMove( event ) {
+
+				if ( event.touches.length == 1 ) {
+
+					event.preventDefault();
+
+					mouseX = event.touches[ 0 ].pageX - windowHalfX;
+					mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+				}
+
+			}
+
+	  
+			
+			function animate() {
+
+				t = new Date().getTime();
+				camera.position.x = Math.sin(t/1000)*10;
+				camera.position.z = Math.cos(t/1000)*10;
+				camera.position.y = Math.cos(t/1000)*10;
+				camera.lookAt(scene.position);
+        
+				// you need to update lookAt on every frame
+				camera.lookAt(scene.position);
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+
+				
+				
+				var time = Date.now() * 0.00005;
+
+				scene.remove( particles) ;
+			        particles=drawRikitake(effectController.scaler,effectController.a,effectController.s,effectController.u,effectController.dt);
+				scene.add( particles );
+			
+				if (postprocme==1) 
+				{
+				renderer.clear();
+				composer.render( 0.1 );
+				}
+				else
+				{
+				renderer.render( scene, camera );
+				}
+				
+				
+
+
+			}
+
+			
+			
+		
+		 
+
+
+		function drawRikitake(scaler,a,s,u,dt)
+		{
+					
+
+			var v = THREE.Vector3();
+			var verticess = new Array();
+			geometry = new THREE.Geometry();
+    
+					var xx = 0;
+					var yy = 0;
+					var zz = 0;  
+					/*var scaler=2;
+
+					
+        a = 2;
+        s = 10;
+        u = 2.1;
+       
+        dt = 0.008;*/
+	
+	x = 0.1;
+        y = 0;
+        z = 0;
+        xn = x;
+        yn = y;
+        zn = z;
+	for (i=0;i<5000;i++)
+	{
+	   xn = -u*x+s*y*z;
+       yn = -u*y+(s*z-a)*x;
+       zn = 1-s*x*y;
+       x = x+xn*dt;
+       y = y+yn*dt;
+       z = z+zn*dt;
+				xx = (x*scaler);
+				yy = (y*scaler);
+				zz = (z*scaler);  
+
+				/* console.debug(xx);
+				 console.debug(yy);
+				 console.debug(zz);*/
+				 geometry.vertices.push(new THREE.Vertex(new THREE.Vector3(xx, yy, zz)));
+				}
+
+				 
+				 
+
+
+//material = new THREE.ParticleBasicMaterial({size: 0.1, color: 0xFF2211, opacity:0.7, depthTest:0, transparent: true, blending: THREE.AdditiveBlending});
+
+							material = new THREE.ParticleBasicMaterial({ color: effectController.color, size: effectController.size });
+							//material.color.setHSV( 0.5, 0.5, 0.5 );
+
+							particles = new THREE.ParticleSystem( geometry, material );
+							particles.sortParticles = true;
+							
+			return particles;
+
+		}
+
+
+		</script>
+
+	</body>
+</html>
+
+
+
+
+
+
+

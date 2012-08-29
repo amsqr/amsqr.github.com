@@ -1,0 +1,203 @@
+<html><head>
+</head>
+<body>
+<label id="numbers"></label>
+<br>
+<label id="kick">kick</label>
+<br>
+<label id="bass1">bass</label>
+<br>
+<label id="bass2">bass</label>
+<br>
+<label id="bass3">bass</label>
+<br>
+<label id="bass4">bass</label>
+<br>
+<label id="bass5">bass</label>
+<br>
+<label id="bass6">bass</label>
+<br>
+<label id="bass7">bass</label>
+<br>
+<label id="bass8">bass</label>
+
+
+</body>
+
+
+<script src="beatdetektor.js"></script>
+<script>
+
+function Sound() {
+  const MIX_TO_MONO = false;
+  const NUM_SAMPLES = 2048;
+  
+  var syncstuff = new Array();
+  
+  var self_ = this;
+  var context_ = new (window.AudioContext || window.webkitAudioContext)();
+  var source_ = null;
+  var jsProcessor_ = null;
+  var analyser_ = null;
+  var viewTimeDomain_ = false;
+
+  var viewportOffset_ = 50 //document.getElementById('viewport-offset');
+
+  var ftimer = 0;
+  var bd = new BeatDetektor();
+  var vu = new BeatDetektor.modules.vis.VU();
+  var kick_det = new BeatDetektor.modules.vis.BassKick();
+  var portion = 0;
+
+  var processAudio_ = function(e) {
+
+    // Get left channel input. No need for output arrays. They're hooked up
+    // directly to the destination, and we're not doing any processing.
+    var inputArrayL = e.inputBuffer.getChannelData(0);
+
+    var freqByteData = new Uint8Array(analyser_.frequencyBinCount);
+
+    if (viewTimeDomain_) {
+      analyser_.getByteTimeDomainData(freqByteData);
+    } else {
+      analyser_.getByteFrequencyData(freqByteData);
+      //analyser_.fftSize = 2048;
+    }
+    
+     bd.process(context_.currentTime, inputArrayL);
+      ftimer += bd.last_update;
+      if (ftimer > 1.0 / 24.0) {
+        vu.process(bd, ftimer);
+		kick_det.process(bd, ftimer);
+		if (kick_det.isKick())
+		{
+		document.getElementById("kick").innerText="KICK";
+		}
+		else
+		{
+		document.getElementById("kick").innerText="";
+		}
+		
+        ftimer = 0;
+      }
+
+      if (vu.vu_levels.length) {
+        var z = vu.vu_levels[0];
+		//document.write(z);
+        }
+		
+
+    self_.render(freqByteData);
+
+  };
+
+  this.render = function(freqByteData) {
+  
+  
+      /*freqByteData = freqByteData.subarray(200);
+      
+      for (var i = 0; i <11 ; ++i)
+	  {
+	    document.getElementById("bass"+i).innerText="";
+		
+		cc=  (1.1*freqByteData[10+i*20]);
+		numspikes=Math.floor(Math.floor(cc)/5);
+		for (var k=0;k<numspikes;++k)
+		{
+			document.getElementById("bass"+i).innerText=document.getElementById("bass"+i).innerText + "*";
+		}
+	  
+	  }
+      */
+	  
+	    var n = freqByteData.length;
+	  var level_range = n/16;
+	  for(var i = 1; i<=8; i++){
+	    document.getElementById("bass"+i).innerText="";
+	    var magnitude = 0;
+	    for(var j = 0; j< level_range; j++) {
+	      magnitude = magnitude +freqByteData[level_range*(i-1)+j];
+	    }
+	    
+	    var height = Math.floor(parseInt(magnitude)/1500);
+		for (var k=0;k<height;++k)
+		{
+		document.getElementById("bass"+i).innerText=document.getElementById("bass"+i).innerText + "*";
+		}
+	      syncstuff[i]=height;
+	      
+	  }
+      	document.getElementById("numbers").innerText=syncstuff;
+
+  };
+
+this.initAudio = function(arrayBuffer) {
+    
+
+    source_ = context_.createBufferSource();
+    source_.looping = true;
+
+    // Use async decoder if it is available.
+    if (context_.decodeAudioData) {
+      context_.decodeAudioData(arrayBuffer, function(buffer) {
+        source_.buffer = buffer;
+      }, function(e) {
+        console.log(e);
+      });
+      
+   } else {
+     source_.buffer = context_.createBuffer(arrayBuffer, MIX_TO_MONO /*mixToMono*/); 
+   } 
+   
+       // This AudioNode will do the amplitude modulation effect directly in JavaScript
+    jsProcessor_ = context_.createJavaScriptNode(NUM_SAMPLES /*bufferSize*/, 1 /*num inputs*/, 1 /*num outputs*/);
+    jsProcessor_.onaudioprocess = processAudio_;
+
+    analyser_ = context_.createAnalyser();
+
+    source_.connect(context_.destination);
+
+
+  };
+
+  this.load = function(url) {
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.responseType = 'arraybuffer';
+    request.onload = function(e) {
+      self_.initAudio(request.response);
+	  self_.play();
+    };
+    request.send();
+	
+  };
+
+  this.play = function() {
+    if (!source_) {
+      sound.load('pianoman.mp3');
+    } else {
+      source_.connect(context_.destination);
+      source_.connect(analyser_);
+
+      analyser_.connect(jsProcessor_);
+      jsProcessor_.connect(context_.destination);
+
+      source_.noteOn(0);
+    }
+  };
+
+  this.pause = function() {
+    //source_.noteOff(0);
+    source_.disconnect(0);
+    jsProcessor_.disconnect(0);
+    analyser_.disconnect(0);
+
+  };
+}
+
+var sound = new Sound();
+sound.load('pianoman.mp3');
+
+</script>
+
+</html>
