@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>www.amsqr.com</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background:#000;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+	#stuff{
+	 height:1px;
+	
+    width:100%;
+   
+}	
+
+   #dashboard{
+
+ 
+
+  height:50px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#FFFFFF  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #000000;
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+
+  
+
+
+		</style>
+	</head>
+	<body>
+<div id="dashboard">
+
+		Drawing the Rikitake Attractor in 3D with Three.js - <a href="http://amsqr.blogspot.com">amsqr.blogspot.com</a> (ams<a href="http://www.google.com/recaptcha/mailhide/d?k=01DruT4lsNm3ZlQarc_G8HmA==&amp;c=M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E=" onclick="window.open('http://www.google.com/recaptcha/mailhide/d?k\07501DruT4lsNm3ZlQarc_G8HmA\75\75\46c\75M3nDxqmfXC-rKWHNvMp2gXJihe3nkLgVs6DVZuafx9E\075', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;" title="Reveal this e-mail address">...</a>@gmail.com) 
+
+
+
+		</div>
+		<div id="stuff">
+		</div>
+
+		<script src="Three.js"></script>
+		<script src="Stats.js"></script>
+		<script src='DAT.GUI.min.js'></script>
+
+		<script>
+
+			var container, stats;
+
+			var camera, scene, renderer;
+
+			var geometry, root;
+
+			var mouseX = 0, mouseY = 0;
+			
+			var EffectController = function() {
+				this.scaler= 2;
+				 this.a= 2
+				 this.s= 10;
+				 this.u =2.1;
+				 this.dt=0.008;
+				
+			};
+
+           var effectController =  new EffectController();
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				scene = new THREE.Scene();
+
+				camera = new THREE.PerspectiveCamera( 20,             // Field of view
+                                             window.innerWidth / window.innerHeight,      // Aspect ratio
+                                            1,            // Near plane
+                                            3000           // Far plane );
+											);
+				//camera.position.z = 10;
+				
+				camera.position.set( 1, 1, 10 );
+                camera.lookAt( scene.position );
+			    //camera.position.z = 2;
+				scene.add( camera );
+				
+
+	  
+				
+			
+				var particles=drawRikitake(effectController.scaler,effectController.a,effectController.s,effectController.u,effectController.dt);
+				scene.add( particles );
+				var light = new THREE.PointLight( 0xFFFF00 );
+				light.position.set( 10, 0, 10 );
+				scene.add( light );
+
+				renderer = new THREE.WebGLRenderer();
+				
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.sortObjects = false;
+				container.appendChild( renderer.domElement );
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				stats.domElement.style.zIndex = 100;
+				container.appendChild( stats.domElement );
+				
+				var matChanger = function( ) {
+				
+				
+				};
+
+				var gui = new DAT.GUI({autoplace:false});
+				gui.add( effectController, "scaler", 0.25, 10, 0.25 ).onChange( matChanger );
+				gui.add( effectController, "a", 0.25, 10, 0.25 ).onChange( matChanger );
+				gui.add( effectController, "s", 0.5, 50, 0.5 ).onChange( matChanger );
+				gui.add( effectController, "u", 0.1, 10, 0.1).onChange( matChanger );
+				gui.add( effectController, "dt", 0.0001, 0.01, 0.0001 ).onChange( matChanger );
+				gui.close();
+				
+				mydiv=document.getElementById('stuff');
+				mydiv.appendChild(gui.domElement);
+				
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				
+				document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+				document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+
+
+			}
+
+			function onDocumentMouseMove(event) {
+
+				mouseX = ( event.clientX - windowHalfX ) ;
+				mouseY = ( event.clientY - windowHalfY ) ;
+
+			}
+
+			
+			function onDocumentTouchStart( event ) {
+
+				if ( event.touches.length == 1 ) {
+
+					event.preventDefault();
+
+					mouseX = event.touches[ 0 ].pageX - windowHalfX;
+					mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+				}
+			}
+
+			function onDocumentTouchMove( event ) {
+
+				if ( event.touches.length == 1 ) {
+
+					event.preventDefault();
+
+					mouseX = event.touches[ 0 ].pageX - windowHalfX;
+					mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+				}
+
+			}
+
+	  
+			
+			function animate() {
+
+				t = new Date().getTime();
+				camera.position.x = Math.sin(t/1000)*10;
+				camera.position.z = Math.cos(t/1000)*10;
+				camera.position.y = Math.cos(t/1000)*10;
+				camera.lookAt(scene.position);
+        
+				// you need to update lookAt on every frame
+				camera.lookAt(scene.position);
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+
+				
+				
+				var time = Date.now() * 0.00005;
+
+				scene.remove( particles) ;
+			        particles=drawRikitake(effectController.scaler,effectController.a,effectController.s,effectController.u,effectController.dt);
+				scene.add( particles );
+			
+				renderer.render( scene, camera );
+
+			}
+
+			
+			
+		
+		 
+
+
+		function drawRikitake(scaler,a,s,u,dt)
+		{
+					
+
+			var v = THREE.Vector3();
+			var verticess = new Array();
+			geometry = new THREE.Geometry();
+    
+					var xx = 0;
+					var yy = 0;
+					var zz = 0;  
+					/*var scaler=2;
+
+					
+        a = 2;
+        s = 10;
+        u = 2.1;
+       
+        dt = 0.008;*/
+	
+	x = 0.1;
+        y = 0;
+        z = 0;
+        xn = x;
+        yn = y;
+        zn = z;
+	for (i=0;i<5000;i++)
+	{
+	   xn = -u*x+s*y*z;
+       yn = -u*y+(s*z-a)*x;
+       zn = 1-s*x*y;
+       x = x+xn*dt;
+       y = y+yn*dt;
+       z = z+zn*dt;
+				xx = (x*scaler);
+				yy = (y*scaler);
+				zz = (z*scaler);  
+
+				/* console.debug(xx);
+				 console.debug(yy);
+				 console.debug(zz);*/
+				 geometry.vertices.push(new THREE.Vertex(new THREE.Vector3(xx, yy, zz)));
+				}
+
+				 
+				 
+
+
+							material = new THREE.ParticleBasicMaterial({ color: 0xFF6600, size: 0.1 });
+							//material.color.setHSV( 0.5, 0.5, 0.5 );
+
+							particles = new THREE.ParticleSystem( geometry, material );
+							particles.sortParticles = true;
+							
+			return particles;
+
+		}
+
+
+		</script>
+
+	</body>
+</html>
+
+
+
+
+
+
+
