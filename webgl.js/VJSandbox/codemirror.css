@@ -115,7 +115,5 @@ span.CodeMirror-selected {
 	right: 3px;
 	width: 11px;
 	height: 11px;
-	background-image: url('resizer.png');
-	background-repeat: no-repeat;
 	cursor: se-resize;
 }
