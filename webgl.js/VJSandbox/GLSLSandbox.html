@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>GLSL Sandbox + Beatdetektor.js</title>
+<html lang="en">
+	<head>
+		<title>GLSL Sandbox</title>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
 		<style>
@@ -56,25 +57,16 @@
 		<link rel="stylesheet" href="default.css">
 
 		<script src="js/lzma.js"></script>
-		<script src="js/jquery.js"></script>
-		<script src="js/helpers.js"></script>
+		<script src='js/jquery.js'></script>
+		<script src='js/helpers.js'></script>
 		<script src="js/codemirror.js"></script>
 		<script src="js/glsl.js"></script>
-		<script src="js/beatdetektor.js"></script>
 
 		<script id="example" type="x-shader/x-fragment">#ifdef GL_ES
 precision mediump float;
 #endif
 
 uniform float time;
-uniform float audio1;
-uniform float audio2;
-uniform float audio3;
-uniform float audio4;
-uniform float audio5;
-uniform float audio6;
-uniform float audio7;
-uniform float kick;
 uniform vec2 mouse;
 uniform vec2 resolution;
 
@@ -88,8 +80,7 @@ void main( void ) {
 	color += sin( position.x * sin( time / 5.0 ) * 10.0 ) + sin( position.y * sin( time / 35.0 ) * 80.0 );
 	color *= sin( time / 10.0 ) * 0.5;
 
-	float levels = kick * 0.5 + 0.2;
-	gl_FragColor = vec4( vec3( color, color * 0.5, sin( color + time / 3.0 ) * 0.75 ) * levels, 1.0 );
+	gl_FragColor = vec4( vec3( color, color * 0.5, sin( color + time / 3.0 ) * 0.75 ), 1.0 );
 
 }</script>
 
@@ -125,14 +116,10 @@ void main( void ) {
 
 		<script>
 
-			var syncstuff = new Array();
-			var kick=0;
-			
 			initialize_helper();
 
 			var compressor=initialize_compressor();
-			setURL( document.getElementById( 'example' ).textContent);
-			
+
 			if ( !window.requestAnimationFrame ) {
 
 				window.requestAnimationFrame = ( function() {
@@ -164,11 +151,8 @@ void main( void ) {
 			var quality = 2, quality_levels = [ 0.5, 1, 2, 4, 8 ];
 			var toolbar, compileButton, fullscreenButton, compileTimer, errorLines = [];
 			var code, canvas, gl, buffer, currentProgram, vertexPosition,
-			parameters = {kick:0,audio1:0,audio2:0, audio3:0,audio4:0, audio5:0,audio6:0,audio7:0,startTime: Date.now(), time: 0, mouseX: 0.5, mouseY: 0.5, screenWidth: 0, screenHeight: 0 },
+			parameters = { startTime: Date.now(), time: 0, mouseX: 0.5, mouseY: 0.5, screenWidth: 0, screenHeight: 0 },
 			frontTarget, backTarget, screenProgram, getWebGL, resizer = {}, compileOnChangeCode = true;
-			
-			
-			var playMusicButton;
 
 			init();
 			if (gl) { animate(); }
@@ -217,191 +201,6 @@ void main( void ) {
 				}, false );
 
 				rightside.appendChild( fullscreenButton );
-				
-
-				var music = [
-					'smile.mp3',
-					'music.mp3'
-				];
-				
-				
-
-				
-				function Sound() {
-				  const MIX_TO_MONO = false;
-				  const NUM_SAMPLES = 2048;
-				  
-				  
-				  var self_ = this;
-				  var context_ = new (window.AudioContext || window.webkitAudioContext)();
-				  var source_ = null;
-				  var jsProcessor_ = null;
-				  var analyser_ = null;
-				  var viewTimeDomain_ = false;
-
-				  var viewportOffset_ = 50;
-
-				  var ftimer = 0;
-				  var bd = new BeatDetektor();
-				  var vu = new BeatDetektor.modules.vis.VU();
-				  var kick_det = new BeatDetektor.modules.vis.BassKick();
-				  var portion = 0;
-
-				  
-					   
-				  var processAudio_ = function(e) {
-
-				    // Get left channel input. No need for output arrays. They're hooked up
-				    // directly to the destination, and we're not doing any processing.
-				    var inputArrayL = e.inputBuffer.getChannelData(0);
-
-				    var freqByteData = new Uint8Array(analyser_.frequencyBinCount);
-
-				    if (viewTimeDomain_) {
-				      analyser_.getByteTimeDomainData(freqByteData);
-				    } else {
-				      analyser_.getByteFrequencyData(freqByteData);
-				      //analyser_.fftSize = 2048;
-				    }
-				    
-				     bd.process(context_.currentTime, inputArrayL);
-				      ftimer += bd.last_update;
-				      if (ftimer > 1.0 / 24.0) {
-					vu.process(bd, ftimer);
-						kick_det.process(bd, ftimer);
-						if (kick_det.isKick())
-						{
-						kick=1;
-						}
-						else
-						{
-						kick=0;
-						}
-						
-					ftimer = 0;
-				      }
-
-				      if (vu.vu_levels.length) {
-					var z = vu.vu_levels[0];
-						//document.write(z);
-					}
-						
-
-				    self_.render(freqByteData);
-
-				  };
-
-				  this.render = function(freqByteData) {
-				  
-			
-					  
-					    var n = freqByteData.length;
-					  var level_range = n/16;
-					  for(var i = 1; i<=8; i++){
-					    //document.getElementById("bass"+i).innerText="";
-					    var magnitude = 0;
-					    for(var j = 0; j< level_range; j++) {
-					      magnitude = magnitude +freqByteData[level_range*(i-1)+j];
-					    }
-					    
-					    var height = Math.floor(parseInt(magnitude)/1500);
-						
-					      syncstuff[i]=height;
-					      
-					  }
-					 
-					//document.getElementById("numbers").innerText=syncstuff;
-
-				  };
-
-				this.initAudio = function(arrayBuffer) {
-				    
-
-				    source_ = context_.createBufferSource();
-				    source_.looping = true;
-
-				    // Use async decoder if it is available.
-				    if (context_.decodeAudioData) {
-				      context_.decodeAudioData(arrayBuffer, function(buffer) {
-					source_.buffer = buffer;
-				      }, function(e) {
-					console.log(e);
-				      });
-				      
-				   } else {
-				     source_.buffer = context_.createBuffer(arrayBuffer, MIX_TO_MONO /*mixToMono*/); 
-				   } 
-				   
-				       // This AudioNode will do the amplitude modulation effect directly in JavaScript
-				    jsProcessor_ = context_.createJavaScriptNode(NUM_SAMPLES /*bufferSize*/, 1 /*num inputs*/, 1 /*num outputs*/);
-				    jsProcessor_.onaudioprocess = processAudio_;
-
-				    analyser_ = context_.createAnalyser();
-
-				    source_.connect(context_.destination);
-
-
-				  };
-
-				  this.load = function(url) {
-				    var request = new XMLHttpRequest();
-				    request.open('GET', url, true);
-				    request.responseType = 'arraybuffer';
-				    request.onload = function(e) {
-				      self_.initAudio(request.response);
-					  self_.play();
-				    };
-				    request.send();
-					
-				  };
-
-				  this.play = function() {
-				    if (!source_) {
-				      sound.load('smile.mp3');
-				    } else {
-				      
-				      source_.connect(context_.destination);
-				      source_.connect(analyser_);
-
-				      analyser_.connect(jsProcessor_);
-				      jsProcessor_.connect(context_.destination);
-
-				      source_.noteOn(0);
-				    }
-				  };
-
-				  this.pause = function() {
-				   if (source_!=null)
-				   {
-				    source_.noteOff(0);
-				    source_.disconnect(0);
-				    jsProcessor_.disconnect(0);
-				    analyser_.disconnect(0);
-					}
-				  };
-				}
-
-				var sound = new Sound();
-				
-				function playMusic(url) {
-					
-					compileButton.textContent = 'Loading audio: ' + url + '...';
-					sound.pause();
-					sound.load(url);
-				}
-				
-				// Add play button
-				playMusicButton = document.createElement( 'button' );
-				playMusicButton.textContent = 'Play Another!';
-				playMusicButton.addEventListener( 'click', function ( event ) {
-
-
-					var pick = Math.floor(Math.random()*music.length);
-					playMusic(music[pick]);
-
-				}, false );
-				// toolbar.appendChild( button );
-				rightside.appendChild( playMusicButton );
 
 				var button = document.createElement( 'a' );
 				button.textContent = 'gallery';
@@ -464,8 +263,6 @@ void main( void ) {
 
 				// from helper.js
 				add_server_buttons();
-				
-				playMusic(music[0]);
 
 				// Initialise WebGL
 
@@ -638,15 +435,7 @@ void main( void ) {
 				cacheUniformLocation( program, 'mouse' );
 				cacheUniformLocation( program, 'resolution' );
 				cacheUniformLocation( program, 'backbuffer' );
-				cacheUniformLocation( program, 'kick' );
-				cacheUniformLocation( program, 'audio1' );
-				cacheUniformLocation( program, 'audio2' );
-				cacheUniformLocation( program, 'audio3' );
-				cacheUniformLocation( program, 'audio4' );
-				cacheUniformLocation( program, 'audio5' );
-				cacheUniformLocation( program, 'audio6' );
-				cacheUniformLocation( program, 'audio7' );
-				
+
 				// Load program into GPU
 
 				gl.useProgram( currentProgram );
@@ -888,30 +677,12 @@ void main( void ) {
 				if ( !currentProgram ) return;
 
 				parameters.time = Date.now() - parameters.startTime;
-				
-				parameters.kick=kick;
-				parameters.audio1=syncstuff[1];
-				parameters.audio2=syncstuff[2];
-				parameters.audio3=syncstuff[3];
-				parameters.audio4=syncstuff[4];
-				parameters.audio5=syncstuff[5];
-				parameters.audio6=syncstuff[6];
-				parameters.audio7=syncstuff[7];
-				
-				
+
 				// Set uniforms for custom shader
 
 				gl.useProgram( currentProgram );
 
 				gl.uniform1f( currentProgram.uniformsCache[ 'time' ], parameters.time / 1000 );
-				gl.uniform1f( currentProgram.uniformsCache[ 'audio1' ], parameters.audio1 );
-				gl.uniform1f( currentProgram.uniformsCache[ 'audio2' ], parameters.audio2 );
-				gl.uniform1f( currentProgram.uniformsCache[ 'audio3' ], parameters.audio3 );
-				gl.uniform1f( currentProgram.uniformsCache[ 'audio4' ], parameters.audio4 );
-				gl.uniform1f( currentProgram.uniformsCache[ 'audio5' ], parameters.audio5 );
-				gl.uniform1f( currentProgram.uniformsCache[ 'audio6' ], parameters.audio6 );
-				gl.uniform1f( currentProgram.uniformsCache[ 'audio7' ], parameters.audio7 );
-				gl.uniform1f( currentProgram.uniformsCache[ 'kick' ], parameters.kick );
 				gl.uniform2f( currentProgram.uniformsCache[ 'mouse' ], parameters.mouseX, parameters.mouseY );
 				gl.uniform2f( currentProgram.uniformsCache[ 'resolution' ], parameters.screenWidth, parameters.screenHeight );
 				gl.uniform1i( currentProgram.uniformsCache[ 'backbuffer' ], 0 );
@@ -952,6 +723,6 @@ void main( void ) {
 			}
 
 		</script>
-	
 
-</body></html>
+	</body>
+</html>
