@@ -53,6 +53,7 @@
 */
 
 </script>
+<script src="beautify.js"></script>
 <script src="lightgl.js"></script>
 </head>
 <body>
@@ -134,7 +135,7 @@ function changerules(val)
 out = "system = new LSystem();" + val.rules +  " res=system.iterate( axiom, document.getElementById('iter').value ); \
 	        document.getElementById('out').value=res;" 
 
-document.getElementById("source").value=out;
+document.getElementById("source").value=js_beautify(out);
 document.getElementById("angle").value=val.angle;
 
 }
@@ -286,6 +287,7 @@ document.getElementById("source").value=" \
 	axiom = 'FXF--FF--FF'; \
 	res=system.iterate( axiom,document.getElementById('iter').value); \
 	document.getElementById('out').value=res;"
+	document.getElementById("source").value=js_beautify(document.getElementById("source").value);
 	
 function evalua()
 {
