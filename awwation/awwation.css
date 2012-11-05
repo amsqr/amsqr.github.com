@@ -1,0 +1,117 @@
+            @import url(http://fonts.googleapis.com/css?family=Averia+Libre);
+            @import url(http://fonts.googleapis.com/css?family=Imprima);
+
+            #banner {
+                float: left;
+                display: inline-block;
+                margin-left: 0%;
+                width: 20%;
+                height: 100%;
+
+                -webkit-border-radius: 10px;
+                -moz-border-radius: 10px;
+                border-radius: 10px;
+/*
+                -webkit-box-shadow: 0px 0px 20px rgba(50, 50, 50, 0.75);
+                -moz-box-shadow:    0px 0px 20px rgba(50, 50, 50, 0.75);
+                box-shadow:         0px 0px 20px rgba(50, 50, 50, 0.75);
+*/
+                padding-left: 20px;
+                padding-right: 20px;
+
+            }
+
+            #banner > p {
+                padding-top: 40px;
+                font-size: 14pt;
+                color: #555555;
+            }
+
+            h1 {
+                font-family: 'Averia Libre';
+                font-weight: normal;
+                font-size: 32pt;
+
+                color: #AA0000;    
+                padding-top: 20px;
+                text-align: center;
+            }
+
+            h2 {
+                font-weight: normal;
+                text-align: center;
+                font-size: 16pt;
+                color: black;
+            }
+    
+            body {
+                font-family: 'Imprima';
+                font-weight: normal;
+                background-color: #EEEEEE;
+            }
+            
+            #content {
+                float: left;
+                display: inline-block;
+                margin-left: 10px;
+                width: 70%;
+                height: 100%;
+
+                padding-left: 20px;
+                padding-right: 20px;
+
+                -webkit-border-radius: 10px;
+                -moz-border-radius: 10px;
+                border-radius: 10px;
+                
+                -webkit-box-shadow: 0px 0px 20px rgba(50, 50, 50, 0.75);
+                -moz-box-shadow:    0px 0px 20px rgba(50, 50, 50, 0.75);
+                box-shadow:         0px 0px 20px rgba(50, 50, 50, 0.75);
+
+                background-color: #ffe;
+            }
+            
+            #content > #share {
+                text-align: center;
+                padding: 20px;
+            }
+
+            #content > #presentation {
+                background-color: white;
+                width: 80%;
+                height: 50%;
+                margin-left: 10%;
+                margin-right: 10%;
+
+                border: none;
+
+                -webkit-border-radius: 10px;
+                -moz-border-radius: 10px;
+                border-radius: 10px;
+                
+                -webkit-box-shadow: 0px 0px 5px rgba(50, 50, 50, 0.75);
+                -moz-box-shadow:    0px 0px 5px rgba(50, 50, 50, 0.75);
+                box-shadow:         0px 0px 5px rgba(50, 50, 50, 0.75);
+
+            }
+            
+            #content > p {
+                text-align: center;
+            }
+
+            #content > h2 {
+                text-align: center;
+            }
+            
+            #content .list {
+                float: left;
+            }
+
+            .list > h3 {
+                text-align: center;
+            }
+            
+            #information {
+                margin-left: 10%;
+                margin-right: 10%;
+            }
