@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="baez.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script src="hyve.js" type="text/javascript"></script>
+    <meta charset=utf-8 />
+	<META NAME="Description" CONTENT="Sentiment analysis using twitter data">
+
+<META NAME="Keywords" CONTENT="twitter, emotion, sentiment analysis">
+
+<META NAME="distribution" CONTENT="Global">
+
+<META NAME="Robots" CONTENT="INDEX,FOLLOW">
+
+    <title>Emotifinder - Real-time Sentiment Analysis of Social Media Streams</title>
+	 <style> 
+
+  	
+
+   #dashboard{
+
+ 
+
+  height:45px;
+
+ top:20px;
+
+  left:10px;
+
+  right:10px;
+
+  background:#000000  36px 8px no-repeat;
+
+  border-radius:4px;
+
+  padding:2px 0 0 0;
+  color: #ffffff;
+
+  font-size: 1.5em;line-height: 1.25;text-align: center;
+
+  }
+  #wrapper {
+
+  width: 100%;
+
+  min-width: 1320px;
+
+}
+
+   </style> 
+
+  	
+
+	 <script type="text/javascript">
+
+	var p1 = 0;
+    var p2 = 0;
+    var p3 = 0;
+	
+	var twitter=[0,0,0];
+	var facebook=[0,0,0];
+	//var foursquare=[0,0,0];
+	var wordpress=[0,0,0];
+	var youtube=[0,0,0];
+	var flickr=[0,0,0];
+	var picasa=[0,0,0];
+	//var delicious=[0,0,0];
+	//var digg=[0,0,0];
+	//7var reddit=[0,0,0];
+	var identica=[0,0,0];
+	
+	var ptwitter=0;
+	var pfacebook=0;
+	//var pfoursquare=0;
+	var pwordpress=0;
+	var pyoutube=0;
+	var pflickr=0;
+	var ppicasa=0;
+	//var pdelicious=0;
+	//var pdigg=0;
+	//var preddit=0;
+	var pidentica=0;
+
+	  google.load('visualization', '1', {packages: ['table', 'gauge', 'intensitymap', 'corechart']});
+	  
+      google.setOnLoadCallback(drawChart);
+	 
+
+      function drawChart() {
+
+        var data = new google.visualization.DataTable();
+		data.addColumn('string', 'name');
+        data.addColumn('number', 'rating');
+        data.addColumn('number', 'count');
+		data.addColumn('number', 'positive');
+		data.addColumn('number', 'negative');
+	
+
+       
+
+        
+
+        data.addRows([
+
+          ['Twitter', twitter[0]*100 ,ptwitter,twitter[1]*100 ,twitter[2]*100 ],
+		  ['Facebook',facebook[0]*100, pfacebook,facebook[1]*100,facebook[2]*100],
+		 
+		  ['Wordpress',wordpress[0]*100, pwordpress,wordpress[1]*100,wordpress[2]*100],
+		  ['Youtube',youtube[0]*100, pyoutube,youtube[1]*100,youtube[2]*100],
+		  ['Flickr',flickr[0]*100, pflickr,flickr[1]*100,flickr[2]*100],
+		  ['Picasa',picasa[0]*100, ppicasa,picasa[1]*100,picasa[2]*100],
+		  
+		  ['Identica',identica[0]*100, pidentica,identica[1]*100,identica[2]*100]
+		  
+
+        ]);
+
+
+
+        var options = {
+
+          width: 1400, height: 300, colors:['blue','grey','green','red'],
+
+};
+
+
+
+        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+
+        chart.draw(data, options);
+		
+
+
+     
+}
+
+function run(bystring)
+{
+      train_samples = {
+        'pos' : [
+          'I love you mommy ! You are my amazing person :)',
+          'I love you and you are a good person',
+          'I win at everything and I want to love people',
+          'good are things are heppening. gbu',
+          'I am so rich',
+          'I want to chase butterflies since they make me happy',
+          'I want to hug bunnies',
+          'You make me smile',
+		  'Money joyous can satisfaction inspired',
+		  'Spirited some ecstasy jaunty affinity',
+		  'Jubilant exhilarated jubilant I ecstasy peaceful bless sparkling',
+		  'Bless airy high-spirited can me',
+		  'Transported internet trust affinity can happiness',
+		   'Exhilarated great amazing gleeful hilarious of cheerful rapture',
+		   'Frisky genial thankful inspired pleased overjoyed agape peaceful',
+		   'Mirthful blessed cheerful bless sensual pleasure trust tranquil',
+		   'Mirthful joy airy mania lucky genial whimsy',
+		   'Jovial terrific cheerful self-satisfied debonair enthusiastic sunny infatuation', 
+		   'Love glad lucky can jolly exhilarated relief lucky interested',
+		   'Convivial satisfied pleased amazing elated here',
+		   'Call money cheerful glass',
+		   'I rapturous a can lucky joyful',
+		   'Humorous sprightly exultant I excited peaceful bright genial'
+        ],
+        'neg' : [
+          'I fail at everything and I want to kill people :( ',
+          'sad are things are heppening. fml',
+          'I hate you and you are a bad person',
+          'I hate you mommy ! You are my terrible person',
+          'I want to kill butterflies since they make me sad',
+          'I want to hurt bunnies',
+          'I am so poor',
+          'You make me frown',
+		  "Frowning lament I lugubrious piteous here",
+"Despair loss sad terror depression clouded victimized joyless lament",
+"Out of sorts depressed discontempt aching missing joyless dolorous edginess",
+"Low guilt distain fail down dejected",
+"Moping sorrowful misgiving can",
+"Dreadful missing water I money pathetic grief",
+"Console have tragic devastated melancholy I ",
+"Call I apprehension sorrow dolorous vulnerable ruined pathetic",
+"Flat police fright disgust dismal disheartened cheerlessness",
+"Self-pity afflicted downcast sorrowful tragic",
+"Can woebegone water hate I frowning",
+"Repulsion qualm blue lonely heartbroken",
+"Clouded can despairing spiritless vulnerable",
+"Glum glass scared sad distaste pain self-pity dumb",
+"Loneliness repulsion cross agonized",
+"Bring remorse abhorrence devastated depressed woebegone missing shocked pathetic",
+"Unhappy scared loss glass down rueful remorse agonized",
+"Dreadful horror lament consternation horror discontented",
+"Revulsion cheerlessness discouraged disheartened",
+"Worried depression edginess sad",
+"Dread remorse hurt",
+"Humiliated heartbroken money some call",
+"Piteous doomed regretful grief can",
+"Can lonely woebegone joyless",
+"Pain apologize despair",
+"Bring cross dolorous pathetic",
+"Guilt afflicted moody money heavyhearted",
+"Humiliated heartbroken humiliated disgust depressed",
+"Guilt I sulky can revulsion agree can",
+"Pathetic dark shocked police dejection worried wariness",
+"Dejected melancholy frowning bereaved bring remorse",
+"Despair fear bring aversion grief dread low",
+"Money I despair lonely disgusted",
+"Cross qualm frowning oppressed ill at ease scorn afflicted pain"
+		  
+		  
+		  
+		  
+        ]
+      }
+	  
+	  
+	  
+
+	  
+      
+        var probdist = baez.train(train_samples);
+
+var count = 0;
+ var queries=[bystring];
+          $(document).ready(function() {
+            $.each(queries, function(k,query){
+              hyve.stream(query,function(data){
+			  
+			  count = count+1;
+			   
+			   if ((count % 10)==0)
+			   {
+			   drawChart();
+			   }
+
+			  scores=baez.guess( data.text);
+			  
+			  switch(data.service)
+			  {
+			  case 'twitter':
+			  twitter[1]=twitter[1] + scores.pos;
+			  twitter[2]=twitter[2] + scores.neg;
+			  twitter[0]=twitter[0] + scores.pos-scores.neg;
+			  ptwitter=ptwitter+1;
+			  break;
+			  
+			  case 'facebook':
+			   facebook[1]=facebook[1] + scores.pos;
+			 facebook[2]=facebook[2] + scores.neg;
+			    facebook[0]=facebook[0]+ scores.pos-scores.neg;
+				pfacebook=pfacebook+1;
+				
+			  break;
+			  
+			  case 'foursquare':
+			   foursquare[1]=foursquare[1] + scores.pos;
+			  foursquare[2]=foursquare[2] + scores.neg;
+			    foursquare[0]=foursquare[0] + scores.pos-scores.neg;
+				pfoursquare=pfoursquare+1;
+			  break;
+			  
+			  case 'wordpress':
+			   wordpress[1]=wordpress[1] + scores.pos;
+			  wordpress[2]=wordpress[2] + scores.neg;
+			    wordpress[0]=wordpress[0]+ scores.pos-scores.neg;
+				pwordpress=pwordpress+1;
+			  break;
+			  
+			  case 'youtube':
+			   youtube[1]=youtube[1] + scores.pos;
+			  youtube[2]=youtube[2] + scores.neg;
+			    youtube[0]=youtube[0] + scores.pos-scores.neg;
+				pyoutube=pyoutube+1;
+			  break;
+			  
+			  case 'flickr':
+			   flickr[1]=flickr[1] + scores.pos;
+			  flickr[2]=flickr[2] + scores.neg;
+			    flickr[0]=flickr[0] + scores.pos-scores.neg;
+				pflickr=pflickr+1;
+			  break;
+			  
+			  case 'picasa':
+			   picasa[1]=picasa[1] + scores.pos;
+			  picasa[2]=picasa[2] + scores.neg;
+			    picasa[0]=picasa[0] + scores.pos-scores.neg;
+				ppicasa=ppicasa+1;
+			  break;
+			  
+			  case 'delicious':
+			   delicious[1]=delicious[1] + scores.pos;
+			  delicious[2]=delicious[2] + scores.neg;
+			    delicious[0]=delicious[0] + scores.pos-scores.neg;
+				pdelicious=pdelicious+1;
+			  break;
+			  
+			  case 'digg':
+			   digg[1]=digg[1] + scores.pos;
+			  digg[2]=digg[2] + scores.neg;
+			    digg[0]=digg[0] + scores.pos-scores.neg;
+				pdiff=pdigg+1;
+			  break;
+			  
+			  case 'reddit':
+			   reddit[1]=reddit[1] + scores.pos;
+			  reddit[2]=reddit[2] + scores.neg;
+			    reddit[0]=reddit[0] + scores.pos-scores.neg;
+				preddit=preddit+1;
+			  break;
+			  
+			  case 'identica':
+			   identica[1]=identica[1] + scores.pos;
+			  identica[2]=identica[2] + scores.neg;
+			    identica[0]=identica[0] + scores.pos-scores.neg;
+				pidentica=pidentica+1;
+			  break;
+			  
+			  default:
+			  break;
+			  
+			  }
+			   if (scores.pos-scores.neg>0)
+			  {
+                  if ((count % 10)==0)
+			   {
+				$('#output').prepend($('<p style="background-color:green;">' + data.service +' : '+ data.text + ' neg:'+scores.neg+' pos:'+scores.pos + ' : <a href="'+ data.source+'">link</a></p>'));
+                }
+				window.p1=window.p1+1;
+				
+				}
+				
+				if (scores.pos-scores.neg<0)
+			  {
+			    if ((count % 10)==0)
+			   {
+			  
+                $('#output').prepend($('<p style="background-color:red;">' + data.service +' : '+ data.text + ' neg:'+scores.neg+' pos:'+scores.pos + ' : <a href="'+ data.source+'">link</a></p>'));
+				}
+				window.p3=window.p3+1;
+
+				
+				}
+				
+				if (scores.pos-scores.neg==0)
+			  {
+			    if ((count % 10)==0)
+			   {
+                $('#output').prepend($('<p style="background-color:grey;">' + data.service +' : '+ data.text + ' neg:'+scores.neg+' pos:'+scores.pos + ' : <a href="'+ data.source+'">link</a></p>'));
+				}
+				window.p2=window.p2+1;
+				}
+				
+				
+				},['twitter','facebook','wordpress','youtube','flickr','picasa','identica']);//['twitter','facebook','foursquare','wordpress','youtube','flickr','picasa','delicious','digg','reddit','identica']);
+			  
+			  
+			  
+			  
+            });
+          });
+       
+
+}
+
+    </script>
+  </head>
+  <body>
+  <div id="dashboard">
+
+		Emotifinder, Real-time Sentiment Analysis of Social Media Streams (<a href="http://www.amsqr.com">www.amsqr.com</a>) 
+
+
+
+		</div>
+
+  <div id = "wrapper">
+
+  Uses Baez.js (naive Bayes) and Hyve.js (data crawling)
+  <input id="key_name1" type="text" value="Justin Bieber" /><button onclick="run($('#key_name1').val());" type="submit">RUN DEMO</button>
+</body>
+   <div id="chart_div"></div>
+    <div id="gauge_div"></div>
+
+  <div id="output"></div>
+  </div>
+</html>

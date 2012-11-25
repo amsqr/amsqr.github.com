@@ -348,7 +348,7 @@ hyve.feeds['vimeo'] = {
         }
     }
 };
-
+/*
 hyve.feeds['bitly'] = {
     methods : ['unshorten','claim'],
     login:'',
@@ -383,7 +383,7 @@ hyve.feeds['bitly'] = {
         hyve.process(item,callback);
     }
 };
-
+*/
 hyve.feeds['twitter'] = {
     methods : ['search'],
     interval : 2000,
