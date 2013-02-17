@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>WebGL Street View</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link rel="stylesheet" href="buttons.css" type="text/css" media="screen" title="no title" charset="utf-8">
+		<style>
+			html {
+				height: 100%;
+			}
+			body {
+				margin: 0;
+				padding: 0;
+				background: #000000;
+				color: #ffffff;
+				font-family: sans-serif;
+				font-size: 13px;
+				line-height: 20px;
+				height: 100%;
+				overflow: hidden
+			}
+			#container {
+				position: absolute;
+				left: 0;
+				top: 0;
+				right: 0;
+				bottom: 0;
+			}
+			a {
+				color: #fff;
+				text-decoration: none;
+				border-bottom: 1px dotted #fff;
+			}
+			a:hover {
+				border-bottom: 1px solid #fff
+			}
+			h1{ 
+				font: 24px Georgia; 
+				font-weight: bold;
+				margin: 0 0 .5em 0;
+			}
+			h2{ 
+				font: 16px Georgia; 
+				margin: 0 0 .5em 0;
+			}
+			.hide{
+				opacity: 1;
+				-webkit-transition: opacity .5s ease-out;
+				-moz-transition: opacity .5s ease-out;
+				-o-transition: opacity .5s ease-out;
+			}
+			#title {
+				position: absolute;
+				top: 20px;
+				width: 300px;
+				left: 20px;
+				background-color: rgba(0,0,0,0.8);
+				border-radius: 3px;
+				padding: 10px;
+				overflow: auto;
+			}
+			#options{
+				position: absolute;
+				top: 20px;
+				width: 300px;
+				right: 20px;
+				background-color: rgba(0,0,0,0.2);
+				border-radius: 3px;
+				padding: 10px;
+				overflow: hidden;
+			}
+			#map{ 
+				width: 300px; 
+				height: 200px; 
+				z-index: 100; 
+				-webkit-box-shadow: 0px 0px 3px 3px rgba( 73, 73, 73, .2 );
+				-moz-box-shadow: 0px 0px 3px 3px rgba( 73, 73, 73, .2 );
+				-o-box-shadow: 0px 0px 3px 3px rgba( 73, 73, 73, .2 );
+				box-shadow: 0px 0px 3px 3px rgba( 73, 73, 73, .2 );	
+			}
+			.button{ 
+				font-size: 11px 
+			}
+			#pano_form button{
+				float: left 
+			}
+			#map_form input{ 
+				background: rgba( 255,255,255,.5 ) url( search.png ) no-repeat 5px 50%; 
+				padding-left: 25px; 
+				width: 185px; 
+				height: 26px; 
+				border: 1px solid #444; 
+				margin-top: 2px
+			}
+			#map_form input:focus{ 
+				background-color: rgba( 255,255,255,.85 ); 
+				border: 1px solid black 
+			}
+			#map_form button{ 
+				width: 80px; 
+				float: right 
+			}
+			#preloader{
+				pointer-events: none;
+				width: 306px;
+				height: 36px;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				margin-left: -153px;
+				margin-top: -18px;
+				background-color: rgba(255,255,255,0.8);
+				border-radius: 3px;
+				-webkit-transition: opacity 1s ease-out;
+				-moz-transition: opacity 1s ease-out;
+				-o-transition: opacity 1s ease-out;
+			}
+			#bar{
+				pointer-events: none;
+				height: 30px;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				margin-left: -150px;
+				margin-top: -15px;
+				background-color: rgba(0,0,0,0.8);
+				border-radius: 3px;
+			}
+			.block{ 
+				position: relative;
+				line-height: 2.5em;
+				padding: 0;
+				margin: 5px 0 0 0;
+				display: block;
+			}
+			#error, #message{ line-height: 1.4em; margin-bottom: .5em }
+
+			a.noborder { border: 0; outline:none; }
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas" width="256" height="256"></canvas><br>
+		<div id="container"></div>
+		
+		<div id="title" class="hide">
+			
+			<h1>WebGL Street View</h1>
+			<h2><a href="http://www.amsqr.com">www.amsqr.com</a></h2>
+			<h2>Google Street View panorama's done in WebGL.</h2>
+		
+			<p>You'll need <a href="http://www.google.com/chrome" rel="external">Chrome</a>, <a href="http://nightly.mozilla.org/" rel="external">Firefox 8+</a>, or another browser that supports <a href="http://enable-cors.org/" rel="external">CORS</a> WebGL textures.</p>
+			<p>Inspired by <a href="http://twitter.com/peter_nitsch" rel="external">@peter_nitsch</a> and <a href="http://blog.nobel-joergensen.com/2011/11/12/creating-real-time-video-ascii-art-using-kickjs-and-webgl/">Nobel Joergensen</a> demos. Built with <a href="http://twitter.com/thespite" rel="external">@thespite's</a> <a href="http://www.clicktorelease.com/code/street/" rel="external">Google Street View Panorama</a> library, and <a href="https://github.com/mrdoob/three.js" rel="external">three.js</a>.</p>
+			
+	
+			
+		</div>
+		
+		<div id="options" class="hide">
+				
+			<div id="map"></div>
+
+			<div class="block">
+				<form id="map_form">
+					<input type="text" name="address" id="address" />
+					<button type="submit" class="primary button" id="searchButton" >Search</button>
+				</form>
+			</div>
+			
+			<div class="block">
+				<button type="submit" id="modeColorButton" style="width: 148px" class="button active">Normal Rendering</button>
+				<button type="submit" id="modeASCIIButton" style="width: 148px" class="button">ASCII Rendering</button>
+			</div>
+			
+			<div class="block" id="status" >
+				<div id="message" ></div>
+				<div id="error" ></div>
+			</div>
+			
+		</div>
+		
+		<div id="preloader" >
+			<div id="bar" ></div>
+		</div>
+		
+		<script src="Three.js"></script>
+		<script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+		<script src="GSVPano.js"></script>
+		
+		<script type="x-shader/x-vertex" id="vertexShader">
+			void main() {
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+			}
+		</script>
+		
+		<script type="x-shader/x-vertex" id="fragmentShader">
+			#ifdef GL_ES
+			precision highp float;
+			#endif
+
+			uniform float rx;
+			uniform float ry;
+			uniform sampler2D inputTexture;
+			uniform sampler2D ASCIITexture;
+			
+            vec2 coord = vec2(rx,ry);
+			
+			const vec2 fontSize = vec2(8.0,16.0);
+
+			vec4 lookupASCII(float asciiValue){
+			  vec2 pos = mod(gl_FragCoord.xy,fontSize.xy);
+
+			  pos = pos / vec2(2048.0,16.0);
+			  pos.x += asciiValue;
+			  return vec4(texture2D(ASCIITexture,pos).rgb,1.0);
+			}
+
+
+			void main(void) {
+			     vec2 invViewport = vec2(1.0) / coord;
+				  vec2 pixelSize = fontSize;
+				  vec4 sum = vec4(0.0);
+				  vec2 q = gl_FragCoord.xy / coord;
+					vec2 uv = 0.5 + (q-0.5);
+					vec2 uvClamped = uv-mod(uv,pixelSize * invViewport);
+					for (float x=0.0;x< fontSize.x;x++){
+						for (float y=0.0;y< fontSize.y;y++){
+							vec2 offset = vec2(x,y);
+							sum += texture2D(inputTexture,uvClamped+(offset*invViewport));
+						}
+					}
+					vec4 average = sum / vec4(fontSize.x*fontSize.y);
+					float brightness = dot(average.xyz,vec3(0.2125,0.7154,0.0721)); // luminance in sRGB
+					vec4 clampedColor = floor(average*8.0)/8.0;
+					float asciiChar = floor((1.0-brightness)*256.0)/256.0;
+					gl_FragColor = clampedColor*lookupASCII(asciiChar);
+					//vec3 oricol = texture2D(inputTexture,vec2(q.x,q.y)).xyz;
+					//oricol.r=1.0;
+					//gl_FragColor = vec4(oricol,1.0);
+
+			}
+		</script>
+		
+		<script>
+
+			var links = document.querySelectorAll( 'a[rel=external]' );
+			for( var j = 0; j < links.length; j++ ) {
+				var a = links[ j ];
+				a.addEventListener( 'click', function( e ) {
+					window.open( this.href, '_blank' );
+					e.preventDefault();
+				}, false );
+			}
+			
+			var loader,
+				map,
+				camera, 
+				scene, 
+				renderer,
+				sphere,
+				uniforms,
+				attributes,
+				container,
+				mesh,
+				marker;
+				
+			var container = document.getElementById( 'container' );
+			var preloader = document.getElementById( 'preloader' );
+			var bar = document.getElementById( 'bar' );
+			var options = document.getElementById( 'options' );
+			var title = document.getElementById( 'title' );
+
+			var postprocessing = { enabled  : true };
+			var material_depth, cubeMaterial;
+			
+			var fov = 90,
+			texture_placeholder,
+			isUserInteracting = false,
+			onMouseDownMouseX = 0, onMouseDownMouseY = 0,
+			lon = 0, onMouseDownLon = 0,
+			lat = 0, onMouseDownLat = 0,
+			phi = 0, theta = 0;
+			lat = 15;
+
+			init();
+			animate();
+		
+			function setProgress( progress ) {
+				bar.style.width = ( preloader.clientWidth - 6 ) * progress / 100 + 'px';
+			}
+			
+			function showProgress( show ) {
+				preloader.style.opacity = ( show == true )?1:0;
+				preloader.style.display = ( show == true )?'block':'none';
+			}
+			
+			function geoSuccess( position ) {
+		
+			var currentLocation = new google.maps.LatLng( position.coords.latitude, position.coords.longitude );
+				map.panTo( currentLocation );
+				addMarker( currentLocation ); // move to position (thanks @theCole!)
+
+			}
+			
+			function geoError( message ) {
+				showError( message );
+			}
+			
+			function showError( message ) {
+				errorDiv.innerHTML = message;
+			}
+			
+			function showMessage( message ) {
+				showError('');
+				messageDiv.innerHTML = message;
+			}
+			
+			function init() {
+
+				container = document.getElementById( 'container' );
+
+				var locations = [
+					{ lat: 40.759011, lng: -73.98447220000003 },
+					{ lat: 37.785747104443196, lng: -122.40620172951662 },
+					{ lat: 39.36382677360614, lng: 8.431220278759724 },
+					{ lat: 50.09072314148827, lng: 14.393133454556278 },
+					{ lat: 35.69143938066447, lng: 139.695139627539 },
+					{ lat: 35.67120372775569, lng: 139.77167914398797 },
+					{ lat: 39.907974000227846, lng: -118.82814144140627},
+					{ lat: 38.897556289243894, lng: -77.0365502699753},
+					{ lat: 36.09956, lng: -112.106834},
+					{ lat: 51.509651382445206, lng: -0.1184348782348934}
+				];
+
+				var	pos = locations[ Math.floor( Math.random() * locations.length ) ];
+				var myLatlng = new google.maps.LatLng( pos.lat, pos.lng );
+				
+				var myOptions = {
+					zoom: 16,
+					center: myLatlng,
+					mapTypeId: google.maps.MapTypeId.ROADMAP,
+					streetViewControl: false
+				}
+				map = new google.maps.Map( document.getElementById( 'map' ), myOptions );
+				google.maps.event.addListener(map, 'click', function(event) {
+					addMarker(event.latLng);
+				});
+				
+				geocoder = new google.maps.Geocoder();
+				
+				scene = new THREE.Scene();
+
+				camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, 1, 1100 );
+				camera.target = new THREE.Vector3( 0, 0, 0 );
+				scene.add( camera );
+
+				var shadowMaterial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'shadow.png' ) } );
+				var shadowGeo = new THREE.PlaneGeometry( 300, 300, 1, 1 );
+				plane = new THREE.Mesh( shadowGeo, shadowMaterial );
+				plane.position.y = - 150;
+				plane.rotation.x = - 90 * Math.PI / 180;
+				scene.add( plane );
+
+				mesh = new THREE.Mesh( new THREE.SphereGeometry( 500, 60, 40 ), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'placeholder.jpg' ) } ) );
+				mesh.scale.x = -1;
+				scene.add( mesh );				
+				
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.sortObjects = false
+
+				container.appendChild( renderer.domElement );
+				
+				initPostprocessing();
+				postprocessing.enabled =false;
+				container.addEventListener( 'mousedown', onMouseDown, false );
+				container.addEventListener( 'mousemove', onMouseMove, false );
+				container.addEventListener( 'mouseup', onMouseUp, false );
+				container.addEventListener( 'mousewheel', onMouseWheel, false );
+				container.addEventListener( 'DOMMouseScroll', onMouseWheel, false);
+				window.addEventListener( 'resize', onWindowResized, false );
+			
+				var modeColorButton = document.getElementById( 'modeColorButton' );
+				if( modeColorButton ) {
+					modeColorButton.addEventListener( 'click', function( e ) {
+						postprocessing.enabled =false;
+						modeColorButton.className = 'button active';
+						modeASCIIButton.className = 'button';
+						e.preventDefault();
+					} );
+				}
+				
+				var modeASCIIButton = document.getElementById( 'modeASCIIButton' );
+				if( modeASCIIButton ) {
+					modeASCIIButton.addEventListener( 'click', function( e ) {
+						postprocessing.enabled =true;
+						modeColorButton.className = 'button';
+						modeASCIIButton.className = 'button active';
+						e.preventDefault();
+					} );
+				}
+				
+				onWindowResized( null );
+			
+				loadPanorama( myLatlng );
+
+				function lockPointer () {
+					if( navigator.pointer ) {
+						navigator.pointer.lock( container, function() {  
+							console.log( 'Pointer locked' ); 
+						}, function() { 
+							console.log( 'No pointer lock' ); 
+						} );  
+					}
+				}
+				
+				var el = document.getElementById( 'fullscreenButton' );
+				if( el ) {
+					el.addEventListener( 'click', function( e ) {
+						container.onwebkitfullscreenchange = function(e) {
+							lockPointer();
+							container.onwebkitfullscreenchange = function() {
+							};
+						};
+						container.onmozfullscreenchange = function(e) {
+							lockPointer();
+							container.onmozfullscreenchange = function() {
+							};
+						};
+						if( container.webkitRequestFullScreen ) container.webkitRequestFullScreen();
+						if( container.mozRequestFullScreen ) container.mozRequestFullScreen();
+						e.preventDefault();
+					}, false );
+				}
+				
+				el = document.getElementById( 'searchButton' );
+				el.addEventListener( 'click', function( event ) {
+					event.preventDefault();
+					findAddress( document.getElementById("address").value );
+				}, false );
+				
+				errorDiv = document.getElementById( 'error' );
+				messageDiv = document.getElementById( 'message' );
+			}
+			
+			function initPostprocessing() {
+
+				var image = new Image(), texture = new THREE.Texture( image );
+				var hash = document.getElementById("canvas");
+				hash.style.opacity = 0;
+				image.onload = function () { 
+					texture.needsUpdate = true; 
+				};
+				image.src = hash.toDataURL();
+
+				postprocessing.scene = new THREE.Scene();
+
+				postprocessing.camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2,  window.innerHeight / 2, window.innerHeight / - 2, -10000, 10000 );
+				postprocessing.camera.position.z = 100;
+
+				var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat };
+				postprocessing.rtTextureDepth = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, pars );
+				postprocessing.rtTextureColor = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, pars );
+
+				postprocessing.material = new THREE.ShaderMaterial( {
+					uniforms: {
+						inputTexture: { type: 't', value: 0.0, texture: postprocessing.rtTextureColor },
+						ASCIITexture: { type: 't', value: 1.0, texture: THREE.ImageUtils.loadTexture( "ascii.gif" ) },
+						rx: { type: 'f', value: window.innerWidth },
+						ry: { type: 'f', value: window.innerHeight }
+					},
+					vertexShader: document.getElementById( 'vertexShader' ).textContent,
+					fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+				} );
+				
+				uniforms = postprocessing.material.uniforms;
+				var material = new THREE.ShaderMaterial( {
+					fragmentShader: postprocessing.material.fragmentShader,
+					vertexShader: postprocessing.material.vertexShader,
+					uniforms: uniforms
+				} );
+
+				postprocessing.quad = new THREE.Mesh( new THREE.PlaneGeometry( window.innerWidth, window.innerHeight ), postprocessing.material );
+				postprocessing.quad.position.z = - 500;
+				postprocessing.scene.add( postprocessing.quad );
+
+			}
+
+			function findAddress( address ) {
+		
+				showMessage( 'Getting coordinates...' );
+				geocoder.geocode( { 'address': address}, function(results, status) {
+					if (status == google.maps.GeocoderStatus.OK) {
+						map.setCenter(results[0].geometry.location);
+						showMessage( 'Address found.' );
+						addMarker( results[0].geometry.location );
+					} else {
+						showError("Geocode was not successful for the following reason: " + status);
+						showProgress( false );
+					}
+				});
+			}
+			
+			function addMarker(location) {
+				if( marker ) marker.setMap( null );
+				marker = new google.maps.Marker({
+					position: location,
+					map: map
+				});
+				marker.setMap( map ); 
+				loadPanorama( location );
+			}
+			
+			function loadPanorama( location ) {
+			
+				setProgress( 0 );
+				showProgress( true );
+				
+				loader = new GSVPANO.PanoLoader( {
+					useWebGL: false
+				} );
+				loader.onSizeChange = function() { 
+					 	
+				};
+				loader.onProgress = function( p ) {
+					setProgress( p );
+				};
+				loader.onError = function( message ) {
+					showError( message );
+					showProgress( false );
+				};
+				loader.onPanoramaLoad = function() {
+
+					mesh.material.map = new THREE.Texture( this.canvas ); 
+					mesh.material.map.needsUpdate = true;
+					
+					var canvas = document.createElement( 'canvas' );
+					var s = 10;
+					canvas.width = this.canvas.width / s;
+					canvas.height = this.canvas.height / s;
+					var ctx = canvas.getContext( '2d' );
+					ctx.drawImage( this.canvas, 0, 0, this.canvas.width, this.canvas.height, 0, 0, canvas.width, canvas.height );
+
+					showMessage( 'Street view data ' + this.copyright + '.' );
+					
+					showProgress( false );
+				};
+
+				loader.load( location );
+				
+			}
+			
+			function onWindowResized( event ) {
+				renderer.setSize( container.clientWidth, container.clientHeight );
+				camera.projectionMatrix = THREE.Matrix4.makePerspective( fov, container.clientWidth / container.clientHeight, 1, 1100 );
+				uniforms[ 'rx' ].value = window.innerWidth;
+				uniforms[ 'ry' ].value = window.innerHeight;
+			}
+
+			function onMouseDown( event ) {
+
+				title.style.opacity = 0;
+				title.style.pointerEvents = 'none';
+				options.style.opacity = 0;
+				options.style.pointerEvents = 'none';
+								
+				event.preventDefault();
+
+				isUserInteracting = true;
+
+				onPointerDownPointerX = event.clientX;
+				onPointerDownPointerY = event.clientY;
+
+				onPointerDownLon = lon;
+				onPointerDownLat = lat;
+
+			}
+
+			function onMouseMove( event ) {
+
+				if ( isUserInteracting ) {
+					lon = ( onPointerDownPointerX - event.clientX ) * 0.1 + onPointerDownLon;
+					lat = ( onPointerDownPointerY - event.clientY ) * 0.1 + onPointerDownLat;
+				}
+				
+			}
+
+			function onMouseUp( event ) {
+
+				title.style.opacity = 1;
+				title.style.pointerEvents = 'auto';
+				options.style.opacity = 1;
+				options.style.pointerEvents = 'auto';
+				
+				isUserInteracting = false;
+				
+			}
+
+			function onMouseWheel( event ) {
+
+				// WebKit
+
+				if ( event.wheelDeltaY ) {
+					fov -= event.wheelDeltaY * 0.05;
+
+				// Opera / Explorer 9
+
+				} else if ( event.wheelDelta ) {
+					fov -= event.wheelDelta * 0.05;
+
+				// Firefox
+
+				} else if ( event.detail ) {
+					fov += event.detail * 1.0;
+				}
+
+				camera.projectionMatrix = THREE.Matrix4.makePerspective( fov, container.clientWidth / container.clientHeight, 1, 1100 );
+				
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+				render();
+
+			}
+
+			function render() {
+				
+				if( !isUserInteracting ) {
+					lon += .05;
+				}
+				lat = Math.max( - 85, Math.min( 85, lat ) );
+				phi = ( 90 - lat ) * Math.PI / 180;
+				theta = lon * Math.PI / 180;
+
+				camera.position.x = 100 * Math.sin( phi ) * Math.cos( theta );
+				camera.position.y = 100 * Math.cos( phi );
+				camera.position.z = 100 * Math.sin( phi ) * Math.sin( theta );
+				
+				camera.lookAt( camera.target );
+
+				if ( postprocessing.enabled ) {
+					scene.overrideMaterial = null;
+					renderer.render( scene, camera, postprocessing.rtTextureColor, true );
+					renderer.render( postprocessing.scene, postprocessing.camera );
+
+				} else {
+					renderer.render( scene, camera );
+
+				}
+
+			}
+
+		</script>
+	
+		
+	</body>
+</html>
