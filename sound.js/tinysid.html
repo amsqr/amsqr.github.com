@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<!--
+Copyright 2013 Juergen Wothke
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Juergen Wothke 
+
+Credits: The visualization used on this page was strongly "inspired" by <a target="_blank" href="http://html5-demos.appspot.com/static/webaudio/createMediaSourceElement.html">this demo</a>
+-->
+<html>
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+<title>TinyJSid</title>
+
+
+<style>
+html, body {
+  
+  margin: 0;
+  padding: 0;
+}
+body > section {
+  display: -webkit-flex;
+  display: flex;
+  
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-align-content: center;
+  align-content: center;
+  -webkit-align-items: center;
+  align-items: center;
+  box-sizing: border-box;
+  height: 100%;
+  -webkit-perspective: 900;
+  -moz-perspective: 900;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+}
+section > * {
+  display: -webkit-flex;
+  -webkit-align-items: center;
+  -moz-align-items: center;
+}
+.logo {
+  position: absolute;
+}
+#logo {
+  -webkit-transform: translateX(-250px) translateY(-20px) translateZ(-390px) rotateX(-10deg) rotateY(-40deg) rotateZ(0deg);
+  -moz-transform: translateX(-250px) translateY(-20px) translateZ(-390px) rotateX(-10deg) rotateY(-40deg) rotateZ(0deg);
+  -webkit-box-reflect: below 0px -webkit-linear-gradient(top, transparent 30%, transparent 50%, rgba(255,255,255,0.4));
+}
+.spectrum {
+  position: absolute;
+  -webkit-box-reflect: below 5px -webkit-linear-gradient(top, transparent, transparent 50%, rgba(255,255,255,0.4));
+}
+#spectrum {
+  -webkit-transform: translateX(-450px) translateY(-60px) translateZ(-560px) rotateX(-40deg) rotateY(35deg);
+  -moz-transform: translateX(-450px) translateY(-60px) translateZ(-560px) rotateX(-40deg) rotateY(35deg);
+}
+aside {
+  position: absolute;
+  left: 1em;
+  top: 3em;
+  z-index: 10;
+}
+label {
+  cursor: pointer;
+}
+</style>
+
+
+<script type="text/javascript" src="TinyJSid.js"></script>
+<script type="text/javascript" src="TinyJSidWrapper.js"></script>
+
+
+<script>
+const SAMPLES_PER_BUFFER = 8192;	// allowed: buffer sizes: 256, 512, 1024, 2048, 4096, 8192, 16384
+var audioCtx;
+var bufferSource;
+var gainNode;
+var analyzerNode;
+
+const WIDTH= 800;
+const HEIGHT= 200;
+var canvasSpectrum;
+var ctxSpectrum;
+var ctxLegend;
+
+function init() {
+	canvasSpectrum = document.getElementById('spectrum');
+	ctxSpectrum = canvasSpectrum.getContext('2d');
+	canvasSpectrum.width = WIDTH;
+
+	var canvas2 = document.getElementById('logo');
+	ctxLegend = canvas2.getContext('2d');
+
+	document.getElementById("shuffle").onclick = playRandomSong;
+			
+	document.getElementById("play").onclick = function(e){
+		isPaused= 0;
+	};
+	document.getElementById("pause").onclick = function(e){
+		isPaused= 1;
+	};
+	document.getElementById("gain").onchange = function(e){
+		gainNode.gain.value= this.value/255;
+	};
+
+	playRandomSong();
+}
+
+
+var someSongs = ['Zoids.sid','Departure_I.sid','Sanxion.sid','One_Man_and_His_Droid.sid','DunesKremix.sid','Anal_ogue.sid','Strobosphere.sid','Sanxion_Remix.sid','Nemesis_the_Warlock.sid','Early_Summer.sid'];
+
+
+function initialAudioSetup() {
+	if (typeof bufferSource != 'undefined') { 
+		bufferSource.stop(0);
+	} else {
+		setupAudioNodes();
+	}
+}
+
+function setupAudioNodes() {
+	if (typeof audioCtx == 'undefined') {
+		try {
+			window.AudioContext = window.AudioContext||window.webkitAudioContext;
+			audioCtx = new AudioContext();
+		} catch(e) {
+			alert('Web Audio API is not supported in this browser (get Chrome 18 or Firefox 26)');
+		}
+		analyzerNode = audioCtx.createAnalyser();
+
+		var rsidNode = audioCtx.createScriptProcessor(SAMPLES_PER_BUFFER, 0, 1);
+		rsidNode.onaudioprocess = tinyRSID_genSamples;
+		
+		gainNode = audioCtx.createGain();
+					
+		rsidNode.connect(gainNode);
+		gainNode.connect(analyzerNode);
+		analyzerNode.connect(audioCtx.destination);
+	}
+}
+
+function reqAnimationFrame() {
+	window.requestAnimationFrame(redrawSpectrum, canvasSpectrum);
+}
+
+function redrawSpectrum(time) {
+	reqAnimationFrame();
+	
+	var freqByteData = new Uint8Array(analyzerNode.frequencyBinCount);
+	analyzerNode.getByteFrequencyData(freqByteData);
+
+	var SPACER_WIDTH = 10;
+	var BAR_WIDTH = 5;
+	var OFFSET = 100;
+
+	var numBars = Math.round(WIDTH / SPACER_WIDTH);
+
+	ctxSpectrum.clearRect(0, 0, WIDTH, HEIGHT);
+
+	ctxSpectrum.fillStyle = '#F6D565';
+	ctxSpectrum.lineCap = 'round';
+
+	for (var i = 0; i < numBars; ++i) {
+	var magnitude = freqByteData[i + OFFSET];
+		ctxSpectrum.fillRect(i * SPACER_WIDTH, HEIGHT, BAR_WIDTH, -magnitude);
+	}
+}
+
+function text(ctx, text, x, y) {
+	ctx.strokeText(text, x, y);
+	ctx.fillText(text, x, y);
+}
+
+function redrawSongInfo() {
+	ctxLegend.clearRect(0, 0, 800, 300);
+	
+	ctxLegend.textBaseline = "middle";
+	ctxLegend.fillStyle = '#000';
+	ctxLegend.strokeStyle = "#FFFFFF";
+	
+	ctxLegend.font = '90px serif bold';
+	
+	text(ctxLegend, "Tiny'R'Sid", 20, 70);
+	ctxLegend.font = '25px sans-serif';
+	text(ctxLegend, "c64 music nostalgia", 20, 125);
+
+	ctxLegend.fillStyle = '#888';
+	ctxLegend.font = '25px sans-serif';
+
+	ctxLegend.textBaseline = 'bottom';
+	text(ctxLegend, songName, 20, 190);
+	text(ctxLegend, songAuthor, 20, 230);
+	text(ctxLegend, soungReleased, 20, 270);
+}
+
+function startMusicPlayback() {
+	isPaused= 0;
+
+	if (typeof bufferSource === 'undefined') {
+		bufferSource = audioCtx.createBufferSource();
+		if (!bufferSource.start) {
+		  bufferSource.start = bufferSource.noteOn;
+		  bufferSource.stop = bufferSource.noteOff;
+		}
+		bufferSource.start(0);		
+	}
+}
+
+function playRandomSong() {
+
+	var someSong= someSongs[Math.floor(Math.random() * someSongs.length)];
+	
+	var xhr = new XMLHttpRequest();
+	//xhr.open("GET", "http://hvsc.perff.dk"+someSong, true);
+	xhr.open("GET", "http://localhost:8000/"+someSong, true);
+	xhr.responseType = "arraybuffer";
+
+	xhr.onload = function (oEvent) {
+		isPaused= 1;
+		tinyRSID_loadData(xhr.response);  
+		tinyRSID_playSong(actualSubsong);
+		isPaused= 0;
+
+		initialAudioSetup();
+		
+		reqAnimationFrame();
+		
+		redrawSongInfo();
+
+		startMusicPlayback();
+	};
+	xhr.send(null);
+}
+</script>
+
+</head>
+
+<body onload="init();">
+
+  
+  <div>
+    TinyJSid: Experimental JavaScript/HTML5 version of <a href="http://www.wothke.ch/tinyrsid/" target="_blank">Tiny'R'Sid</a>.
+ 
+  <p>(C) 2013 Juergen Wothke </p>
+ 
+  <p>This page does not use any plugins but is based exclusively on the draft version Web Audio API. 
+  You'll need Chrome or Firefox 26 (Nightly) to make it play the music. The visual effects 
+  work best in Chrome. (If Firefox passes out - press 'reload'... it's experimental.)
+  
+  <p>Contrarry to most other HTML5 based pages out there, the music here is NOT based on  
+  OscillatorNode based waveforms or the playback of some sampledata file. Instead the samples here 
+  are completely calculated within JavaScript. The respective logic emulates a C64 and plays back an
+  original *.sid file.</p>
+  
+ <p>Credits: The Tiny'R'Sid JavaScript code was generated using <a href="https://github.com/kripken/emscripten/wiki" target="_blank">emscripten</a>.</p>
+ 
+ <p>Please use controls on the right (e.g. to play another song): 
+<button id="play"> &gt;</button>
+<button id="pause"> ||</button>
+<button id="shuffle"> &gt;&gt;|</button>
+<input type="range" id="gain" name="gain" min="1" max="255" value="255">
+
+ </div>
+
+<section>
+  <div>
+	<canvas id="logo" class="logo" width="800" height="290"></canvas>
+    <canvas id="spectrum" class="spectrum" width="512" height="200"></canvas>
+  </div>
+</section>
+
+</body>
+</html>
