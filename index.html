@@ -14,28 +14,59 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-        .square-preview {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            overflow: hidden;
-            aspect-ratio: 1 / 1; 
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        .square-preview iframe { flex: 1; width: 100%; border: none; pointer-events: none; }
-        .preview-label {
-            background: #fff;
-            color: #24292f;
-            padding: 12px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            border-top: 1px solid #eee;
-        }
-        .preview-label:hover { color: #0969da; }
+        /* Enforces a 1:1 Aspect Ratio (Square) */
+.square-preview {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 1 / 1; 
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    position: relative; /* Required for the scaling math */
+}
+
+/* Wrapper to isolate the scaled content and prevent layout breaking */
+.iframe-wrapper {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    overflow: hidden; /* Crops out anything that spills during the scale */
+}
+
+/* The active webpage preview */
+.square-preview iframe {
+    /* Step 1: Tell the browser it is drawing a huge desktop screen */
+    width: 1200px;
+    height: 1200px;
+    border: none;
+    background: #fff;
+    pointer-events: none; /* Prevents scrolling or clicking inside */
+
+    /* Step 2: Push it to the top left edge */
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0; /* Anchor scale from top-left corner */
+
+    /* Step 3: Zoom it out heavily to fit the frame */
+    /* Adjust this percentage up or down depending on how small you want the text to look */
+    transform: scale(0.25); 
+}
+
+/* Label at the bottom */
+.preview-label {
+    background: #fff;
+    color: #24292f;
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border-top: 1px solid #eee;
+    z-index: 10; /* Ensures it stays above the scaled iframe */
+}
     </style>
 </head>
 <body>
@@ -66,7 +97,9 @@
                         card.className = 'square-preview';
 
                         card.innerHTML = `
-                            <iframe src="./${file.name}"></iframe>
+                            <div class="iframe-wrapper">
+                                <iframe src="./${file.name}"></iframe>
+                            </div>
                             <a href="./${file.name}" class="preview-label">${file.name.replace('.html', '')}</a>
                         `;
 
